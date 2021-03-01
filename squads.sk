@@ -1,0 +1,132 @@
+script load:
+	{squad::name::*} isn't set:
+		add "Start" to {squad::name::*}
+	create gui with id "Squad N" with virtual chest named "My Squad":
+		make gui 12 with light green dye named "&a&lCREATE" with lore "&7||&7Make a Squad||&7":
+			play sound "ui.button.click" with pitch 2 at player for player
+			close player's inventory
+			play sound "ui.button.click" with pitch 2 at player for player
+			set {chat::%player%} to "Create Squad"
+			send "&6&lENTER A NAME FOR YOUR SQUAD"
+
+		make gui 14 with yellow dye named "&e&lINVITES" with lore "&7||&7See who invited you||&7":
+			play sound "ui.button.click" with pitch 2 at player for player
+			create gui with id "Tree" with virtual chest with size 6 named "Invitations":
+				set {_n} to 0
+				{squad::invites::%player%::*} isn't set:
+					make gui 22 with red glass named "&cNo Invites :("
+				else:
+					loop {squad::invites::%player%::*}:
+						make gui {_n} with loop-value:
+							close player's inventory
+							play sound "ui.button.click" with pitch 2 at player for player
+							set {_info::*} to uncolored line 2 of lore of gui-clicked-item parsed as "\[%string%\]"
+							set {_squad} to {_info::1}
+							loop all players where [{squad::name::%input%} = {_squad}]:
+								send "&fSquads &8» &7%player% joined the squad!" to loop-player
+							set {squad::rank::%player%} to "Member"
+							set {squad::name::%player%} to {_squad}
+							clear {squad::invites::%player%::*}
+							send "&fSquads &8» &7You joined [%{_squad}%]!"
+						add 1 to {_n}
+			open last gui to player
+
+	create gui with id "Confirm" with virtual chest named "Are you sure":
+		make gui 13 with green glass named "&a&lI AM SURE":
+			play sound "ui.button.click" with pitch 2 at player for player
+			close player's inventory
+			loop {squad::name::*}:
+				{squad::name::%loop-index%} = {squad::name::%player%}
+				send "&7%nl%&c&lYOUR SQUAD HAS BEEN REMOVED%nl%&7" to loop-index parsed as player
+				clear {squad::rank::%loop-index%}
+				clear {squad::name::%loop-index%}
+
+	create gui with id "Squad L" with virtual chest named "My Squad":
+		make gui 15 with red dye named "&c&lDELETE" with lore "&7||&7Delete your squad||&7":
+			play sound "ui.button.click" with pitch 2 at player for player
+			open gui "Confirm" to player
+
+		make gui 11 with yellow dye: named "&e&lINVITE" with lore "&7||&7Invite players||&7":
+			play sound "ui.button.click" with pitch 2 at player for player 
+			create gui with id "Sky" with virtual chest with size 6 named "Invite Players":
+				play sound "ui.button.click" with pitch 2 at player for player 
+				loop all players where [{squad::name::%input%} isn't set]:
+					set {_p} to loop-player
+					set {_CN} to "%loop-player%"
+					make next gui with loop-player's skull named "&6&l%{_CN}%" with lore "&7||&7Click to invite||&7":
+						play sound "ui.button.click" with pitch 2 at player for player
+						{squad::invites::%{_p}%::*} isn't set:
+							add player's skull named "&6%player%" with lore "&7||&7[%{squad::name::%player%}%]||&7" to {squad::invites::%{_p}%::*}
+							send "&fSquads &8» &7Invited %{_p}%"
+							send "&fSquads &8» &7Invited to [%{squad::name::%player%}%] by %player%" to {_p}
+						else:
+							{squad::invites::%{_p}%::*} contains player's skull named "&6%player%" with lore "&7||&7[%{squad::name::%player%}%]||&7":
+								send "&fSquads &8» &7You've already invited %{_p}%!"
+							else:
+								add player's skull named "&6%player%" with lore "&7||&7[%{squad::name::%player%}%]||&7" to {squad::invites::%{_p}%::*}
+								send "&fSquads &8» &7Invited %{_p}%"
+								send "&fSquads &8» &7Invited to [%{squad::name::%player%}%] by %player%" to {_p}
+			open last gui to player
+		#make gui 13 with player's skull named "&4&lKICK" with lore "&7||&7Remove players||&7from your Squad||&7":
+		#	play sound "ui.button.click" with pitch 2 at player for player 
+		#	create gui with id "Blue" with virtual chest with size 6 named "Kick Players":
+		#		loop {squad::name::*}:
+		#			{squad::name::%player%} = {squad::name::%loop-index%}
+		#			set {_p} to loop-index parsed as a player
+		#			{_p} != player
+		#			make next gui with {_p}'s skull named "&6%{_p}%" with lore "&7||&7Click to Kick||&7":
+		#				play sound "ui.button.click" with pitch 2 at player for player 
+		#				send "&fSquads &8» &7You've been kicked from your squad!" to {_p}
+		#				clear {squad::rank::%{_p}%}
+		#				clear {squad::name::%{_p}%}
+		#				send "&fSquads &8» &7%{_p}% was kicked" to all players where [{squad::name::%player%} = {squad::name::%input%}]
+		#	open last gui to player
+
+	create gui with id "Squad M" with virtual chest named "My Squad":
+		make gui 13 with dark oak door named "&c&lLEAVE" with lore "&7||&7Leave your Squad||&7":
+			play sound "ui.button.click" with pitch 2 at player for player
+			close player's inventory
+			send "&fSquads &8» &7You left your squad."
+			set {_n} to {squad::name::%player%}
+			clear {squad::name::%player%}
+			clear {squad::rank::%player%}
+			send "&fSquads &8» &7%player% left" to all players where [{squad::name::%input%} = {_n}]
+
+damage of player:
+	{squad::name::%victim%} = {squad::name::%attacker%}
+	cancel event
+	send "&fSquads &8» &7You cannot attack members of your squad!"
+
+chat:
+	{chat::%player%} is set
+	cancel event
+	{chat::%player%} = "Create Squad":
+		replace all " " in message with ""
+		length of uncolored message < 3:
+			send "&fSquads &8» &7Squad name has to be at least 3 characters."
+			clear {chat::%player%}
+			stop
+		length of uncolored message > 6:
+			send "&fSquads &8» &7Squad name can't be longer than 6 characters."
+			clear {chat::%player%}
+			stop
+		{squad::name::*} contains uncolored message:
+			send "&fSquads &8» &7That name is taken already."
+			clear {chat::%player%}
+			stop
+		play sound "ui.button.click" with pitch 2 at player for player
+		send "&fSquads &8» &7The squad &f'%uncolored message%'&7 has been created!"
+		set {squad::name::%player%} to uncolored message
+		set {squad::rank::%player%} to "Leader"
+	clear {chat::%player%}
+
+command squad:
+	aliases: sq
+	trigger:
+		{squad::name::%player%} isn't set:
+			open gui "Squad N" to player
+		else:
+			{squad::rank::%player%} = "Leader":
+				open gui "Squad L" to player
+			else if {squad::rank::%player%} = "Member":
+				open gui "Squad M" to player

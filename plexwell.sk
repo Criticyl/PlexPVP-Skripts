@@ -1,0 +1,79 @@
+#
+# 
+#
+options:
+    prefix: &6PLEX &8»
+
+on rightclick on end portal frame:
+    well(player)
+    show spawner flames at location of event-block
+
+function well(p: player):
+    set {_u} to uuid of {_p}
+    set {_skull} to skull of "%{_p}%" parsed as offline player
+    set {_freeamount} to {freewell::%{_u}%} ? 0
+    set {_plexamount} to {plexwell::%{_u}%} ? 0
+    set {_premamount} to {premwell::%{_u}%} ? 0
+    set {_waited} to difference between {claim::%{_u}%} and now
+    open chest with 3 rows named "Plex Well - %{_plexamount}% Packages" to {_p}
+    play sound "ui.loom.take_result" at {_p} for {_p}
+    loop 27 times:
+        format gui slot (loop-value - 1) of {_p} with dark gray glass pane named "&7" to do nothing
+    format gui slot 10 of {_p} with {_skull} named "&f&nYour Packages" with lore "" and "" and "&7Earn packages from mining, purchases, server store, and " and "&7from Fin The Fisherman!" and  and "" "&3&lPACKAGE TYPE" and " &e-> &7Free Packages &8» &b%{_freeamount}%" and " &e-> &7Plex Packages &8» &b%{_plexamount}%" and " &e-> &7Premium Packages &8» &b%{_premamount}%" and "" to do nothing 
+    {_waited} is less than 24 hours:
+        format gui slot 11 of {_p} with minecart named "&f&nAlready Claimed!" with lore "" and "" and "&7Earn free packages by logging in every " and "&724 Hours and claiming them!" and "" to do nothing 
+    else if {_waited} is greater than 24 hours
+        format gui slot 11 of {_p} with minecart with furnace named "&f&nClaim your reward!" with lore "" and "" and "&7Earn free packages by logging in every " and "&724 Hours and claiming them!" and "" to run freePackage({_p})
+
+#   # Free Package
+
+    if {_freeamount} > 0:
+        format gui slot 15 of {_p} with minecart with chest named "&fFree Packages &8» &b%{_freeamount}%" with lore "&7Click to open package" and "" and "&3&lCONTAINS" and " &e-> &f$25-100" and " &e-> &fx3 Maxis Boss Shard(s)" and "" and "&3&lCHANCE" and " &e-> &fx1 Plex Package" and "" to run:
+            close {_p}'s inventory
+            openPackage(player, "free")
+    else if {_freeamount} = 0:
+        format gui slot 15 of {_p} with minecart named "&fFree Packages &8» &b%{_freeamount}%" with lore "&7Click to open package" and "" and "&3&lCONTAINS" and " &e-> &f$25-100" and " &e-> &fx3 Maxis Boss Shard(s)" and "" and "&3&lCHANCE" and " &e-> &fx1 Plex Package" and "" to do nothing
+
+#   Plex Package
+
+    if {_plexamount} > 0:
+        format gui slot 16 of {_p} with minecart with chest named "&fPlex Packages &8» &b%{_plexamount}%" with lore "&7Click to open package" and "" and "&3&lCONTAINS" and " &e-> &f$125-200" and " &e-> &fx3 Vulcan Boss Shard(s)" and "" and "&3&lCHANCE" and " &e-> &fx1 Premium Package" and "" to run:
+            close {_p}'s inventory
+            openPackage(player, "plex")
+    else if {_plexamount} = 0:
+        format gui slot 16 of {_p} with minecart named "&fPlex Packages &8» &b%{_plexamount}%" with lore "&7Click to open package" and "" and "&3&lCONTAINS" and " &e-> &f$125-200" and " &e-> &fx3 Vulcan Boss Shard(s)" and "" and "&3&lCHANCE" and " &e-> &fx1 Premium Package" and "" to do nothing  
+
+#   Premium Package
+
+    if {_premamount} > 0:
+        format gui slot 17 of {_p} with minecart with chest named "&fPremium Packages &8» &b%{_premamount}%" with lore "&7Click to open package" and "" and "&3&lCONTAINS" and " &e-> &f$125-200" and " &e-> &fx3 Vulcan Boss Shard(s)" and "" and "&3&lCHANCE" and " &e-> &fx1 Premium Package" and "" to run:
+            close {_p}'s inventory
+            openPackage(player, "premium")
+    else if {_premamount} = 0:
+        format gui slot 17 of {_p} with minecart named "&fPremium Packages &8» &b%{_premamount}%" with lore "&7Click to open package" and "" and "&3&lCONTAINS" and " &e-> &f$125-200" and " &e-> &fx3 Vulcan Boss Shard(s)" and "" and "&3&lCHANCE" and " &e-> &fx1 Premium Package" and "" to do nothing  
+
+function freePackage(p: player):
+	set {_u} to uuid of {_p}
+	wait 2 seconds
+	set {_waited} to difference between {claim::%{_u}%} and now
+	if {_waited} is less than 24 hours:
+		send "&d&lPLEX &8» &7You may claim your daily reward in &c%difference between {_waited} and 24 hours%" to {_p}
+	else:
+		if {_p} has permission "rank.vip" or "rank.patron" or "rank.legend" or "rank.ultra":
+			set {claim::%{_u}%} to now
+			send "" to {_p} 
+			send "&d&lPLEX &8» &7Welcome back, here's your daily reward! &d&lDONOR BONUS APPLIED" to {_p}
+			send "" to {_p}
+			add 1 to {freewell:%{_u}%}
+            add 1 to {premwell:%{_u}%}
+		else:
+			set {claim::%{_u}%} to now
+			send "" to {_p}
+			send "&d&lPLEX &8» &7Welcome back, here's your daily reward!" to {_p}
+			send "" to {_p}
+			add 1 to {freewell::%{_u}%}
+
+function openPackage(p: player, type: text):
+    set {_u} to uuid of {_p}
+    send "{@prefix} &fOpening package..."
+    play sound "block.note_block.pling" at pitch 0 at {_p} for {_p}

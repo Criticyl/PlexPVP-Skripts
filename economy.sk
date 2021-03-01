@@ -1,0 +1,13 @@
+# Skript economy to replace essentials
+# written by nicholxs#0001
+
+# all money checks are done in commands, not in functions.
+
+
+function addMoney(p: player, a: number):
+	set {_u} to {_p}'s uuid
+	add {_a} to {data::%{_u}%::balance}
+
+command balance [<>]
+
+command pay [<offline player>] [<integer>]:

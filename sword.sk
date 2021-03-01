@@ -1,0 +1,223 @@
+options:
+    merchant: &d&lBLACKSMITH &8»
+
+function getSword(level: number) :: item:
+    set {_nbt} to "{level: %{_level}%, experience: 0}"
+    set {_sword} to getSwordType({_level}) with nbt {_nbt} with no nbt
+    set {_sword} to {_sword} named getSwordName({_level})
+    set {_maxExperience} to getMaxSwordExperience({_level})
+    set {_sharpness} to floor((mod({_level} - 1, 10) + 1) / 2)
+    set {_lore::*} to getSwordLore(0, {_maxExperience})
+    loop size of {_lore::*} times:
+        set line loop-number of lore of {_sword} to {_lore::%loop-number%}
+
+
+
+    evaluate "enchant {_sword} with sharpness %{_sharpness}%" if {_sharpness} > 0
+
+    return {_sword}
+
+function getSwordLore(experience: number, maxExperience: number) :: strings:
+    set {_lore::*} to "" and "%getSwordBar({_experience}, {_maxExperience}, 20)% &8(&7%{_experience}%&8/&7%{_maxExperience}%&8)" and ""
+    return {_lore::*}
+
+function getSwordBar(x: number, y: number, length: number) :: string:
+    set {_progress} to floor({_x} / {_y} * {_length})
+    set {_bar} to "&8["
+    loop {_progress} times:
+        set {_bar} to "%{_bar}%&d|"
+    loop {_length} - {_progress} times:
+        set {_bar} to "%{_bar}%&7|"
+    return "%{_bar}%&8]"
+
+function getSwordLevel(level: number) :: number:
+    if {_level} <= 10:
+        set {_base} to 0
+    else if {_level} <= 20:
+        set {_base} to 10
+    else if {_level} <= 30:
+        set {_base} to 20
+    else if {_level} <= 40:
+        set {_base} to 30
+    else if {_level} <= 50:
+        set {_base} to 40
+    else:
+        return 0
+    return {_level} - {_base}
+
+function getSwordType(level: number) :: item type:
+    if {_level} <= 0:
+        return air
+    else if {_level} <= 10:
+        return wooden sword
+    else if {_level} <= 20:
+        return stone sword
+    else if {_level} <= 30:
+        return iron sword
+    else if {_level} <= 40:
+        return diamond sword
+    else if {_level} <= 50:
+        return netherite sword
+    return air
+
+function getSwordName(level: number) :: string:
+    if {_level} <= 0:
+        return "&cBroken <= 0"
+    else if {_level} <= 10:
+        return "&7Wooden Sword &8[&d%{_level}%&8]"
+    else if {_level} <= 20:
+        return "&7Stone Sword &8[&d%{_level}%&8]"
+    else if {_level} <= 30:
+        return "&7Iron Sword &8[&d%{_level}%&8]"
+    else if {_level} <= 40:
+        return "&7Diamond Sword &8[&d%{_level}%&8]"
+    else if {_level} <= 50:
+        return "&7Netherite Sword &8[&d%{_level}%&8]"
+    else:
+        return "&cBroken > 50"
+
+
+on damage:
+    set {_uuid1} to uuid of attacker
+    set {_uuid2} to uuid of victim
+    set attacker's attack speed attribute to 10
+    set victim's attack speed attribute to 10
+    if damage cause is entity explosion:
+        cancel event
+        stop
+    if damage cause is drowning:
+        cancel event
+        stop
+    attacker is a player
+    attacker's tool is a sword
+
+    if {playerclan::%{_uuid1}%} is set:
+        if {playerclan::%{_uuid1}%} is {playerclan::%{_uuid2}%}:
+            cancel event
+            stop
+
+    if uncolored name of victim contains "CLICK":
+        stop
+    if nbt of attacker's tool contains "level":
+        if {clan::%attacker's uuid%::name} != {clan::%victim's uuid%::name}:
+            set {_level} to tag "level" of attacker's tool's nbt
+            set {_experience} to tag "experience" of attacker's tool's nbt
+            set {_maxExperience} to getMaxSwordExperience({_level})
+
+            if {_experience} + (2*{sword-booster}) >= {_maxExperience}:
+                {_experience} != {_maxExperience}
+                send "" to attacker
+                send "{@merchant} &7Your sword is ready to be upgraded!" to attacker
+                send "" to attacker
+                play sound "entity.chicken.egg" at pitch 0.8 at attacker for attacker
+
+                set {_x} to 1
+
+                loop 3 times:
+                    set {_x} to {_x} + 0.2
+                    play sound "entity.arrow.hit_player" at pitch {_x} at attacker for attacker
+                    wait 4 ticks
+
+            add (2*{sword-booster}) to {_experience}
+            set {_experience} to min({_experience}, {_maxExperience})
+
+            add "{level: %{_level}%, experience: %{_experience}%}" to nbt of attacker's tool
+            set {_lore::*} to getSwordLore({_experience}, {_maxExperience})
+            loop size of {_lore::*} times:
+                set line loop-number of lore of attacker's tool to {_lore::%loop-number%}
+
+function upgradeSword(player: player, tool: item):
+    set {_uuid} to uuid of {_player}
+    if {_player}'s tool != sword:
+        send "{@merchant} &7You cannot upgrade this!" to {_player}
+        play sound "entity.villager.no" with volume 1 and pitch 0.8 at {_player} for {_player}
+    else:    
+        set {_level} to tag "level" of {_tool}'s nbt
+        set {_experience} to tag "experience" of {_tool}'s nbt
+        set {_maxExperience} to getMaxSwordExperience({_level})
+        send "BLACKSMITH SWORD: %{_player}% upgraded a %{_player}'s held item% to a %{_level} + 1% sword!" to console
+        if nbt of {_tool} does not contain "experience":
+            send "{@merchant} &7You cannot upgrade this!" to {_player}
+            play sound "entity.villager.no" with volume 1 and pitch 0.8 at {_player} for {_player}
+        else if {_level} >= 50:
+            send "{@merchant} &7You cannot upgrade this anymore!" to {_player}
+            play sound "entity.villager.no" with volume 1 and pitch 0.8 at {_player} for {_player}
+        else if {_experience} != {_maxExperience}:
+            send "{@merchant} &7Your sword is not ready to be upgraded yet!" to {_player}
+            play sound "entity.villager.no" with volume 1 and pitch 0.8 at {_player} for {_player}
+        else if {_player}'s balance < getSwordUpgradeCost({_level}):
+            send "{@merchant} &7You need &d$%getSwordUpgradeCost({_level})%&7 to upgrade this!" to {_player}
+            play sound "ui.button.click" at {_player} for {_player}
+        else if {_player}'s inventory does not contain {_tool}:
+            send "{@merchant} &7Your inventory no longer contains your sword!" to {_player}
+            play sound "entity.villager.no" with volume 1 and pitch 0.8 at {_player} for {_player}
+        else:
+            if {_player} can hold 2 minecarts:
+                set {_test::*} to split "%lore of {_tool}%" by "||"
+                if "%{_test::*}%" contains "leap":
+                    give {_player} diamond named "&bLeap" with lore "&7", "&7Launch and gain a short", "&7burst of speed!", "&7Right-Click" and "&7"
+                if "%{_test::*}%" contains "blink":
+                    give {_player} emerald named "&9Blink" with lore "&7", "&7Go invisible for a short time", "&7Shift Right-Click" and "&7"
+            else:
+                send "{@merchant} &7You dont have enough room for your abilities!" to {_player}
+                stop
+            remove getSwordUpgradeCost({_level}) from {_player}'s balance
+            remove {_tool} from {_player}
+            give {_player} getSword({_level} + 1)
+            send "{@merchant} &7You upgraded your sword!" to {_player}
+            play sound "entity.player.levelup" with volume 1 and pitch 2 at {_player} for {_player}
+function getSwordUpgradeCost(level: number) :: number:
+    return ((ceil(({_level} * 20 / 10)) * 10) + 50) ? 1
+
+function getMaxSwordExperience(level: number) :: number:
+    return ceil({_level} * {_level} * 7.8)
+
+function buyNewSword(player: player):
+    set {_uuid} to uuid of {_player}
+    if {_player}'s inventory cannot hold 1 wooden sword:
+        send "&d&lBLACKSMITH &8» &7Your inventory does not have enough space for this!" to {_player}
+        play sound "ui.button.click" at {_player} for {_player}
+    if {_player}'s balance < 100:
+        send "&d&lBLACKSMITH &8» &7You need &d$100 &7to purchase a new sword!" to {_player}
+        play sound "ui.button.click" at {_player} for {_player}
+    else if {_player}'s balance >= 100:
+        remove 100 from {_player}'s balance
+        give {_player} getSword(1)
+        send "&d&lBLACKSMITH &8» &7Successfully purchased a new sword!" to {_player}
+        play sound "entity.arrow.hit_player" at pitch 2 at {_player} for {_player}
+
+function buyNewPickaxe(player: player):
+    set {_uuid} to uuid of {_player}
+    if {_player}'s inventory cannot hold 1 wooden pickaxe:
+        send "&d&lBLACKSMITH &8» &7Your inventory does not have enough space for this!" to {_player}
+        play sound "ui.button.click" at {_player} for {_player}
+    if {_player}'s balance < 100:
+        send "&d&lBLACKSMITH &8» &7You need &d$100 &7to purchase a new pickaxe!" to {_player}
+        play sound "ui.button.click" at {_player} for {_player}
+    else if {_player}'s balance >= 100:
+        remove 100 from {_player}'s balance
+        give {_player} getPickaxe(1)
+        send "&d&lBLACKSMITH &8» &7Successfully purchased a new pickaxe!" to {_player}
+        play sound "entity.arrow.hit_player" at pitch 2 at {_player} for {_player}
+
+function openSwordGui(player: player, tool: item):
+    open virtual chest inventory with size 3 named "Sword Upgrade" to {_player}
+    format gui slot 0,1,2,3,4,5,6,7,8,9,10,12,13,14,16,17,18,19,20,21,22,23,24,25 and 26 of {_player} with air to do nothing
+    set {_lore::*} to "" and "&7Purchase a new, level &8[&d1&8]" and "&7sword for &d$100" and "" and "&dClick to purchase!" and ""
+    format gui slot 11 of {_player} with wooden sword named "&dBuy Sword" with lore {_lore::*} with no nbt to run function buyNewSword({_player})
+    if {_player}'s tool is sword:
+        if nbt of {_tool} contains "level":
+            set {_level} to tag "level" of nbt of {_tool}
+            if {_level} < 50:
+                set {_experience} to tag "experience" of nbt of {_tool}
+                set {_maxExperience} to getMaxSwordExperience({_level})
+
+                set {_lore::*} to "" and "&7Your current level &8[&d%{_level}%&8] %getSwordBar({_experience}, {_maxExperience}, 10)%" and "" and "&7This upgrades your sword" and "&7if you have enough" and "&7sword XP and money!" and "" and "&7Cost: &d$%getSwordUpgradeCost({_level})%" and "" and "&dClick to upgrade!" and ""
+                format gui slot 15 of {_player} with {_tool} named "&dSword Upgrade" with lore {_lore::*} with no nbt to run function upgradeSword({_player}, ({_player}'s tool))
+            else:
+                format gui slot 15 of {_player} with barrier named "&dSword Upgrade" with lore "" and "&cYou cannot upgrade this sword anymore!" and "" to do nothing
+        else:
+            format gui slot 15 of {_player} with barrier named "&dSword Upgrade" with lore "" and "&cYou cannot upgrade this!" and "" to do nothing
+    else:
+        format gui slot 15 of {_player} with barrier named "&dSword Upgrade" with lore "" and "&cYou are not holding a sword to upgrade!" and "" to do nothing
+

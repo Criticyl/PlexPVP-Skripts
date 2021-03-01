@@ -1,0 +1,467 @@
+options:
+	colored_chat_permission: chat.color
+	white_chat_permission:   chat.white
+
+on chat:
+	if {%player's uuid%.clanChat.%{playerclan::%player's uuid%}%} is true:
+		cancel event
+		loop {clanMembersList.%{playerclan::%player's uuid%}%::*}:
+			send "&d&lCLANS &8» &d%player% &8» &d%message%" to loop-value
+		stop
+	if message contains "hacker" or "killaura" or "autoclicking" or "hacking":
+		cancel event
+		send "&c&lREPORT &8» &7Please use &c/report &7to report a hacker!"
+		stop
+	set message to colored message if player has permission "{@colored_chat_permission}"
+
+	if player has permission "{@white_chat_permission}":
+		set {_color} to "&f"
+	else:
+		set {_color} to "&7"
+
+	set {_level} to {data::%player's uuid%::level} ? 1
+	
+	set {_length} to length of message
+	set {_message} to message
+	if {_length} is between 0 and 8:
+		set {_capMax} to {_length}
+	if {_length} is between 8 and 20:
+		set {_capMax} to {_length}*0.5
+	if {_length} > 20:
+		set {_capMax} to {_length}*0.7
+	if number of uppercase chars in message > {_capMax}:
+		set {_message} to {_message} in lowercase
+	player has permission "chat.color":
+
+		player's group = "ultra":
+			replace all "&k", "&l", "&o", "&n" and "&m" in message with ""
+
+		set chat format to "&8[&d%{_level}%&8] &7%player's prefix%[player]%player's suffix% &8» %{_color}%%colored {_message}%"
+	
+	else:
+		set chat format to "&8[&d%{_level}%&8] &7%player's prefix%[player]%player's suffix% &8» %{_color}%%{_message}%"
+
+on hunger bar change:
+	cancel event
+
+on item damage:
+	cancel event
+
+on join:
+	player's group = "ultra":
+		set join message to "&d&lULTRA &8» &d%player% &7has joined the server!"
+	else:
+		set join message to ""
+	teleport player to {location::spawn}
+
+on quit:
+	set quit message to ""
+
+# Adds commas to large numbers (1,000, 10,000,000, etc.)
+function format(integer: number) :: text:
+	return regex replace "(?<=\d)(?=(\d\d\d)+(?!\d))" with "," in "%{_integer}%"
+
+# SIDEBAR
+
+on join:
+	updateDisplayName(player)
+	set {data::%player's uuid%::level} to {data::%player's uuid%::level} ? 1
+	set {data::%player's uuid%::experience} to {data::%player's uuid%::experience} ? 0
+	set {data::%player's uuid%::balance} to {data::%player's uuid%::balance} ? 0
+
+	toggle player's scoreboard on
+	set title of player's scoreboard to "&0"
+	recalculateLevel(player)
+
+	if player is op:
+		set player's nametag to "&3%player%"
+	else if player's group is "trainee", "mod" or "sr.mod":
+		set player's nametag to "&b%player%"
+	else:
+		set player's nametag to "&7%player%"
+
+	# TODO: Don't wait a tick
+
+	wait a tick
+	set players' tablist footer to "%nl%&7%size of players%&8/&7%max player count%%nl%&7"
+	updateScoreboard(player)
+	while player is online:
+		updateDisplayName(player)
+		wait 30 seconds
+
+on join:
+	set {_u} to uuid of player
+	while player is online:
+		if {data::%{_u}%::bounty} is set:
+			bind hologram "&6&l$%format({data::%player's uuid%::bounty})%" to player for a second offset by random number between -1 and 1, random number between 0.5 and 2, random number between -1 and 1		
+		wait 16 ticks
+		
+on quit:
+	clear scoreboard of player
+	wait a tick
+	set players' tablist footer to "%nl%&7%size of players%&8/&7%max player count%%nl%&7"
+
+function updateScoreboard(player: player):
+	set {_uuid} to {_player}'s uuid
+	set {_level} to {data::%{_uuid}%::level}
+	set {_experience} to {data::%{_uuid}%::experience}
+
+	set {_nextLevel} to {_level} + 1 # Skript won't function without this
+	set {_requiredExperience} to {requiredExperience::%{_nextLevel}%}
+	set {_levelProgress} to {_experience} / {_requiredExperience}
+
+	set {_completed::*} to {completed::%{_uuid}%} split at ","
+
+	set line 15 of {_player}'s scoreboard to "&8"
+	set line 14 of {_player}'s scoreboard to "&8» &7Level: &f%{_level}% &8| &e%bar({_levelProgress}, 20)%"
+	set line 13 of {_player}'s scoreboard to "&0"
+	set line 12 of {_player}'s scoreboard to "&8» &7Money: &f$%format({_player}'s balance)%"
+	set line 11 of {_player}'s scoreboard to "&8» &7Kills: &f%format({data::%{_uuid}%::kills} + 0)%"
+	set line 10 of {_player}'s scoreboard to "&8» &7Deaths: &f%format({data::%{_uuid}%::deaths} + 0)%"
+	set line 9 of {_player}'s scoreboard to "&8» &7Streak: &f%format({data::%{_uuid}%::streak} + 0)%"
+	set line 8 of {_player}'s scoreboard to "&1"
+	set line 7 of {_player}'s scoreboard to "&8» &7Bounty: &f$%format({data::%{_uuid}%::bounty} + 0)%" 
+	if {playerclan::%{_uuid}%} is set:
+		set line 6 of {_player}'s scoreboard to "&8» &7Clan: &8[&7%{playerclan::%{_uuid}%}%&8]"
+	else:
+		set line 6 of {_player}'s scoreboard to "&8» &7Clan: &fNone"
+	set line 5 of {_player}'s scoreboard to "&8» &7Eggs: &8[&e%size of {_completed::*}%&8/&e30&8]"
+	set line 4 of {_player}'s scoreboard to "&d&c&a&0"
+	
+	set line 3 of {_player}'s scoreboard to "&8» &7Pickaxe &fx%{pickaxe-booster}% &8| &7Sword &fx%{sword-booster}%"
+	set line 2 of {_player}'s scoreboard to "&2"
+	set line 1 of {_player}'s scoreboard to "&7&oPlexPvP.minehut.gg"
+
+function updateDisplayName(player: player):
+	set {_uuid} to {_player}'s uuid
+	{playerclan::%{_uuid}%} is set:
+		set {_clan} to "&8[&7%{playerclan::%{_uuid}%}%&8]"
+	set {_displayname} to "%{_player}'s prefix%%{_player}%%{_player}'s suffix% %{_clan} ? """"%"
+
+	if {data::%{_uuid}%::bounty} is set:
+		set {_player}'s tablist name to "%{_displayname}% &6&l$%format({data::%{_uuid}%::bounty})%"
+	else:
+		set {_player}'s tablist name to "%{_displayname}%"
+
+function bumpBounty(player: player, amount: number):
+	set {_uuid} to {_player}'s uuid
+	# {data::%{_uuid}%::bounty} < 5000
+
+	add {_amount} to {data::%{_uuid}%::bounty}
+	# set {data::%{_uuid}%::bounty} to min(5000, {data::%{_uuid}%::bounty})
+
+	set {_bounty} to {data::%{_uuid}%::bounty}
+	
+	send "&6&lBOUNTY! &6%{_player}%&6's &7bounty is now &6$%format({_bounty})%&6!" to players where [input != {_player}]
+	send "&6&lBOUNTY! &7Your bounty is now &6$%format({_bounty})%&6!" to {_player}
+	
+	updateDisplayName({_player})
+
+function claimBounty(victim: player, attacker: player):
+	set {_victimUUID} to {_victim}'s uuid
+	set {_attackerUUID} to {_attacker}'s uuid
+
+	set {_bounty} to {data::%{_victimUUID}%::bounty}
+	if {_attacker} is set:
+		send "&6&lBOUNTY! &7Your bounty of &6$%format({_bounty})% &7was claimed by &6%{_attacker}%&6!" to {_victim}
+		send "&6&lBOUNTY! &7You claimed &6%{_victim}%&6's &7bounty of &6$%format({_bounty})%&6!" to {_attacker}
+		send "&6&lBOUNTY! &6%{_victim}%&6's &7bounty of &6$%format({_bounty})% &7was claimed by &6%{_attacker}%&6!" to players where [input isn't {_victim} or {_attacker}]
+	
+	add {_bounty} to {_attacker}'s balance
+	clear {data::%{_victimUUID}%::bounty}
+	
+	updateDisplayName({_victim})
+	updateDisplayName({_attacker})
+	recalculateLevel({_victim})
+
+# FANCY ANIMATION
+
+on load:
+	set {animation::frames::*} to ("1PLEXPVP|2P1LEXPVP|0P2L1EXPVP|0PL2E1XPVP|0PLE2X1PVP|0PLEX2P1VP|0PLEXP2V1P|0PLEXPV2P|0PLEXPVP|0PLEXPVP|0PLEXPVP|0PLEXPVP|1PLEXPVP|1PLEXPVP|1PLEXPVP|1PLEXPVP|0PLEXPVP|0PLEXPVP|0PLEXPVP|0PLEXPVP|1PLEXPVP|1PLEXPVP|1PLEXPVP|1PLEXPVP|0PLEXPVP|0PLEXPVP|0PLEXPVP|0PLEXPVP|1PLEXPVP|1PLEXPVP|1PLEXPVP|1PLEXPVP|1PLEXPVP|1PLEXPVP|1PLEXPVP|1PLEXPVP|1PLEXPVP|1PLEXPVP|1PLEXPVP|1PLEXPVP") split at "|"
+	set {animation::color} to 1
+	set {animation::progress} to 1
+
+every 4 seconds:
+	add 1 to {animation::progress}
+	if {animation::progress} > size of {animation::frames::*}:
+		set {animation::progress} to 1
+	set {_frame} to {animation::frames::%{animation::progress}%}
+
+	replace "0" with "&e&l" in {_frame}
+	replace "1" with "&6&l" in {_frame}
+	replace "2" with "&6&l" in {_frame}
+
+	set title of players' scoreboard to {_frame}
+	set players' tablist header to "%nl%%{_frame}%%nl%&7Happy Easter!%nl%"
+
+# every 5 seconds:
+# 	loop players:
+# 		add 1 to {_index}
+
+		# Changing scoreboard updates to events to reduce lag. recalculateLevel includes updateScoreboard, so will also be removed. MSG me for more info @nicholxs#0001
+		# updateScoreboard(loop-players)
+		# recalculateLevel(loop-players)
+
+on join:
+	while player is online:
+		block under player is barrier:
+			player's gamemode is survival or adventure:
+				damage player by 100 with fake cause void
+		wait 8 ticks
+
+on food bar change:
+	cancel event
+
+function startCombatLog(v: player, a: player): #v= victim, a= attacker
+	set {_rand} to random integer between 1 and 999999
+	set {combatLog::%{_v}%} to "%{_a}% %{_rand}%"
+	set {_remainingTime} to 10 seconds
+	loop 10 times:
+		if {combatLog::%{_v}%} is "%{_a}% %{_rand}%":
+			send action bar "&c&lCOMBAT &8» &7(%{_a}%&7) &c%{_remainingTime}%" to {_v}
+			remove 1 second from {_remainingTime}
+			wait 1 second
+		else:
+			stop loop
+	loop 10 times:
+		send action bar "&c&lCOMBAT &8» &7You are no longer in combat!" to {_v} if {combatLog::%{_v}%} is "%{_a}% %{_rand}%"
+		wait 2 ticks
+		delete {combatLog::%{_v}%} if {combatLog::%{_v}%} is "%{_a}% %{_rand}%"
+
+on region enter:
+	if "%event-region%" contains "spawn":
+		if {combatLog::%player%} is set:
+			send "&cYou cannot enter this area while in combat!"
+			push player westward at speed 1
+
+on damage:
+	damage cause is fall:
+		cancel event
+
+on damage of player:
+	name of victim does not contain "&1&7"
+	if attacker is victim:
+		cancel event
+		stop
+	if attacker is a player:
+		set {_uuid1} to uuid of attacker
+		set {_uuid2} to uuid of victim
+		set metadata "attacker_uuid" of victim to attacker's uuid
+		set metadata "attacker_time" of victim to now
+		if {playerclan::%{_uuid1}%} is set:
+			if {playerclan::%{_uuid1}%} is {playerclan::%{_uuid2}%}:
+				cancel event
+				stop
+		startCombatLog(attacker, victim)
+		startCombatLog(victim, attacker)
+
+	if (victim's health - final damage) <= 0:
+		cancel event
+		set {_attackerUUID} to metadata "attacker_uuid" of victim
+		set {_suicide} to false
+
+		if {_attackerUUID} isn't set:
+			set {_suicide} to true
+		else:
+			set {_attacker} to {_attackerUUID} parsed as offline player
+		
+		if {_attackerUUID} is set:
+			set {_attackerTime} to metadata "attacker_time" of victim
+			if time since {_attackerTime} > 5 seconds:
+				set {_suicide} to true
+		if {data::%victim's uuid%::bounty} is set:
+			claimBounty(victim, {_attacker})
+		delete {combatLog::%victim%}
+		
+		if {killeffect::%{_attackerUUID}%::blood} is true:
+			console command "particle minecraft:block redstone_block %x-loc of victim% %y-loc of victim + 1% %z-loc of victim% 0.5 0.5 0.5 0.05 100"
+		if {killeffect::%{_attackerUUID}%::firework} is true:
+			pop burst colored red fading to black at location of victim
+		if {killeffect::%{_attackerUUID}%::cloud} is true:
+			console command "particle minecraft:cloud %x-loc of victim% %y-loc of victim + 1% %z-loc of victim% 0.35 0.5 0.35 0.05 25"
+		# if {killeffect::%{_attackerUUID}%::consume} is true:
+			
+		add 1 to {data::%{_attackerUUID}%::kills}
+		add 1 to {data::%{_attackerUUID}%::streak}
+		add 10 to {data::%{_attackerUUID}%::experience}
+		
+		heal victim
+		extinguish victim
+		teleport victim to {location::respawn}
+		play sound "entity.iron_golem.death" with pitch 2 at victim for victim
+		
+		if {_suicide} is true:
+			send title "&c&lYOU DIED!" with subtitle "&7You slipped into the void..." to victim
+		else:
+			send title "&c&lYOU DIED!" with subtitle "&c%{_attacker}% &7killed you" to victim
+			play sound "entity.arrow.hit_player" with pitch 1.9 at {_attacker} for {_attacker}
+			set {_word::*} to "obliterated", "destroyed", "killed", "absolutely demolished" and "wrecked"
+			set {_word} to a random element of {_word::*}
+
+			if "%region at {_attacker}%" contains "mine":
+				send "&c&lKILL! &7You %{_word}% &c%victim% &7and recieved &c$50 &7(Combat Zone)" to {_attacker}
+				add 50 to {_attacker}'s balance
+			else:
+				send "&c&lKILL! &7You %{_word}% &c%victim% &7and recieved &c$10" to {_attacker}
+				add 10 to {_attacker}'s balance
+			if type of attacker's tool is sword:
+				if nbt of attacker's tool contains "level":
+					set {_level} to tag "level" of attacker's tool's nbt
+					set {_experience} to tag "experience" of attacker's tool's nbt
+					set {_maxExperience} to getMaxSwordExperience({_level})
+
+					if {_experience} + 15 >= {_maxExperience}:
+						{_experience} != {_maxExperience}
+						send "" to attacker
+						send "&d&lBLACKSMITH &8» &7Your sword is ready to be upgraded!" to attacker
+						send "" to attacker
+						play sound "entity.chicken.egg" at pitch 0.8 at attacker for attacker
+
+						set {_x} to 1
+
+						loop 3 times:
+							set {_x} to {_x} + 0.2
+							play sound "entity.arrow.hit_player" at pitch {_x} at attacker for attacker
+							wait 4 ticks
+
+					add 15 to {_experience}
+					set {_experience} to min({_experience}, {_maxExperience})
+					add "{level: %{_level}%, experience: %{_experience}%}" to nbt of attacker's tool
+					set {_lore::*} to getSwordLore({_experience}, {_maxExperience})
+
+					loop size of {_lore::*} times:
+						set line loop-number of lore of attacker's tool to {_lore::%loop-number%}
+
+		if {_attacker} is player:
+			set {_streak} to {data::%{_attackerUUID}%::streak}
+
+			if mod({_streak}, 10) is 0:
+				send "&c&lSTREAK! &c%{_attacker}% &7is on a streak of &c%format({_streak})%&c!" to players where [input != {_attacker}]
+				send "&c&lSTREAK! &7You're on a streak of &c%format({_streak})%&c!" to {_attacker}
+			else if mod({_streak} - 2, 10) is 0:
+				{_streak} >= 12
+				bumpBounty({_attacker}, 100)
+
+		recalculateLevel({_attacker})
+		# updateScoreboard({_attacker})
+
+		add 1 to {data::%victim's uuid%::deaths}
+		clear {data::%victim's uuid%::streak}
+
+		clear metadata "attacker_uuid" of victim
+		clear metadata "attacker_time" of victim
+
+		recalculateLevel(victim)
+
+on quit:
+	if {combatLog::%player%} is set:
+		add 1 to {data::%player's uuid%::deaths}
+		clear {data::%player's uuid%::streak}
+		clear {data::%player's uuid%::bounty}
+		delete {combatLog::%player%}
+
+on pressure plate:
+	cancel event
+
+	if metadata "launchpad" of player is set:
+		time since metadata "launchpad" of player < 1 seconds
+		stop
+
+	set metadata "launchpad" of player to now
+
+	play sound "entity.bat.takeoff" with pitch 0.7 at player for player
+	push player up at speed 1.1
+	push player south at speed 3
+
+function repeat(string: string, times: number) :: string:
+	set {_out} to ""
+
+	loop {_times} times:
+		set {_out} to "%{_out}%%{_string}%"
+
+	return {_out}
+
+function bar(progress: number, length: number) :: string:
+	set {_a} to repeat("|", ceil({_progress} * {_length}))
+	set {_b} to repeat("|", {_length} - ceil({_progress} * {_length}))
+	return "%{_a}%&7%{_b}%"
+
+function recalculateLevel(player: player):
+	set {_uuid} to {_player}'s uuid
+	set {_level} to {data::%{_uuid}%::level}
+	set {_experience} to {data::%{_uuid}%::experience}
+	set {_nextLevel} to {_level} + 1
+	set {_requiredExperience} to {requiredExperience::%{_nextLevel}%}
+
+	if {_experience} >= {_requiredExperience}:
+		set {data::%{_uuid}%::experience} to 0
+		add 1 to {data::%{_uuid}%::level}
+		send "%nl%&d&lLEVEL UP! &7You are now level &d%{_nextLevel}%&d! &7You won a &dgift!%nl%&7" to {_player}
+		send title "&d&lLEVEL UP!" with subtitle "&7You are now level &d%{_nextLevel}%&d!" to {_player}
+		play sound "entity.player.levelup" with pitch 0.8 at {_player} for {_player}
+		give {_player} 1 of {gift}
+
+	updateScoreboard({_player})
+	
+# I hate this. It needs severe
+# refactoring. Please help...
+on load:
+	set {_x} to 50
+	set {_y} to 10
+	clear {requiredExperience::*}
+	loop 100 times:
+		set {requiredExperience::%loop-number + 1%} to round({_x})
+		set {_y} to {_y} * 1.15
+		set {_x} to {_x} + {_y}
+
+
+function listPrint(node: string, layer: string="	", list: string="", currentlayer: string="") :: strings:
+	# Prints a list
+	# example
+	# set {listname::*} to online players
+	# send listPrint("listname")
+	#
+	# do not touch list and current layer
+	# layer is customizeable and is defaulted to 4 spaces 
+	set {_returnarr::1} to "%{_currentlayer}%[%{_node}%]"
+	set {_t} to 1
+	loop indices of {%{_list}%%{_node}%::*}:
+		add 1 to {_t}
+		set {_returnarr::%{_t}%} to "%{_currentlayer}%%{_layer}%%loop-value%:%{%{_list}%%{_node}%::%loop-value%}%" if {%{_list}%%{_node}%::%loop-value%} is set
+		if {%{_list}%%{_node}%::%loop-value%::*} is set:
+			loop listPrint(loop-value, {_layer}, "%{_list}%%{_node}%::", "%{_currentlayer}%%{_layer}%"):
+				add 1 to {_t}
+				set {_returnarr::%{_t}%} to loop-value-2
+	return {_returnarr::*}
+
+command /stats [<offlineplayer>]:
+	trigger:
+		if arg-1 is not set:
+			stats(player, player)
+		if arg-1 is set:
+			stats(player, arg-1)
+function stats(p: player, p2: offlineplayer):
+	set {_uuid} to uuid of {_p2}
+	set {_level} to {data::%{_uuid}%::level}
+	set {_experience} to {data::%{_uuid}%::experience}
+	set {_nextLevel} to {_level} + 1 # Skript won't function without this
+	set {_requiredExperience} to {requiredExperience::%{_nextLevel}%}
+	set {_levelProgress} to {_experience} / {_requiredExperience}
+	send "" to {_p}
+	send "&8» &d&lSTATS &8(&f%{_p2}%&8)" to {_p}
+	send "" to {_p}
+	send "&8» &dKills: &7%{data::%{_uuid}%::kills} ? 0% &8| &dDeaths: &7%{data::%{_uuid}%::deaths} ? 0%" to {_p}
+	send "&8» &dK/D: &7%({data::%{_uuid}%::kills}/{data::%{_uuid}%::deaths}) ? ""NaN""%" to {_p}
+	send "" to {_p}
+	send "&8» &dLevel: &7%{_level}% &8| &d%bar({_levelProgress}, 20)%" to {_p}
+	send "&8» &dBalance: &7$%format({_p2}'s balance)%" to {_p}
+	send "&8» &dClan: &7%{playerclan::%{_uuid}%} ? ""&7None""%" to {_p}
+	send "" to {_p}
+	recalculateLevel({_p})
+	
+command /updates [<text>]:
+	aliases: patchnotes, patch
+	trigger:
+		set {_t} to text component from "&3&lUPDATES &8» &7Click here to view our latest updates &b(v%{pVersion}%&b)"
+		set click event of {_t} to a new click event to open url "%{pLink}%"
+		send component {_t} to player

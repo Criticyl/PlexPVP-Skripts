@@ -1,0 +1,707 @@
+on form of snow layer:
+    cancel event
+
+on form of ice:
+    cancel event
+
+command pay [<player>] [<integer>]:
+	trigger:
+		arg-1 is set:
+			arg-2 is set:
+				arg-1 != player:
+					player's balance >= arg-2:
+						arg-2 >= 10:
+							metadata "pay" of player isn't set:
+								set metadata "pay" of player to true
+								remove arg-2 from player's balance
+								add arg-2 to arg-1's balance
+								send "&d&lPLEXPVP &8» &7You sent &d$%format(arg-2)%&7 to &7%arg-1's prefix%%arg-1%" to player
+								send "&d&lPLEXPVP &8» &7You received &d$%format(arg-2)%&7 from &7%player's prefix%%player%" to arg-1
+								play sound "entity.arrow.hit_player" at pitch 2 at arg-1 for arg-1
+								wait 10 seconds
+								clear metadata "pay" of player
+							else:
+								send "&d&lPLEXPVP &8» &7You must wait 10 seconds between sending money!"
+						else:
+							send "&d&lPLEXPVP &8» &7The minimum amount you can send is &b$10!"
+					else:
+						send "&d&lPLEXPVP &8» &7You don't have enough money!"
+				else:
+					send "&d&lPLEXPVP &8» &7You can't pay yourself!"
+			else:
+				send "&d&lPLEXPVP &8» &7Specify an amount to send to &d%arg-1%&d!" to player
+		else:
+			send "&d&lPLEXPVP &8» &7Specify a player to pay!" to player
+
+on entity block change:
+	cancel event
+
+on join:
+	{cleared::%player's uuid%} isn't set: 
+		clear player's enderchest
+		clear player's inventory
+		set player's balance to 0
+		send "%nl%&8» &c&lWELCOME! &6&lHAPPY EASTER!!%nl%%nl%&8» &7Welcome to &bPlexPvP &7Easter reskin!%nl%&8» &7Read up on our data loss at &b/discord!%nl%&8» &7We're extremely sorry for all your lost data :(%nl%%nl%&8» &bEnjoy the festive season!%nl%" to player
+		play sound "entity.player.levelup" at pitch 2 at player for player
+		give player getSword(1)
+		give player getPickaxe(1)
+		set {cleared::%player's uuid%} to true
+		wait 5 seconds
+		send "%nl%&8» &7Heres some &cmerry berries &7as a little festive treat!%nl%" to player
+		play sound "entity.arrow.hit_player" at pitch 0 at player for player
+		give player 3 of {berry}
+	else:
+		send "%nl%  &6&lHAPPY EASTER!%nl%&o%nl%&8» &7Welcome back, &b%player%&b!%nl%&8» &7Join our discord server with &b/discord!%nl%&8» &7Join our minehut club with &b/club%nl%&8» &7Purchase ranks with &b/buy%nl%" to player
+		play sound "entity.arrow.hit_player" at pitch 2 at player for player
+
+on chat:
+	message contains "nigger", "nigga", "cunt", "faggot", "n1gger", "n i g g e r", "n ! g g e r", "n i g g a", "n ! g g a", "n 1 i g g e r", "n 1 g g a", "n!gger", "n!gga", "n1gga", "n1gger", "nigg4", "nigg3r", "nigg", "n1g", "n!g" or "retard":
+		cancel event
+		send "&cYour message was deleted because it contains disallowed words!"
+		play sound "block.note_block.pling" at pitch 0 at player for player
+		loop all players:
+			if loop-player has permission "plex.ban":
+				send "&c%player% &7said a no-no word! &c%message%"  to loop-player
+
+
+on chat:
+	player's group = "default", "vip", "patron", "legend", "ultra" or "media":
+		metadata "talk" of player isn't set:
+			set metadata "talk" of player to now
+			wait 2 seconds
+			clear metadata "talk" of player
+		else:
+			cancel event
+			send "&cYou must wait 2 seconds between sending messages!"
+
+command discord:
+	trigger:
+		play sound "entity.chicken.egg" at pitch 0 at player for player
+		open virtual chest inventory with size 3 named "Discord" to player
+		format gui slot 13 of player with light blue dye named "&bOfficial Discord" with lore "", "&7Interact with our community,", "&7suggest content and contact", "&7support!", "", "&bClick to join!" to run:
+			close player's inventory
+			send "<link:https://discord.gg/hreUQCkJMJ>&b&lDISCORD &8» &7To join our official discord server, &bclick here!<reset>" 
+			play sound "entity.chicken.egg" at pitch 0.8 at player for player
+
+			set {_x} to 1
+
+			loop 3 times:
+				set {_x} to {_x} + 0.2
+				play sound "entity.arrow.hit_player" at pitch {_x} at player for player
+				wait 4 ticks
+
+command club:
+	trigger:
+		play sound "entity.chicken.egg" at pitch 0 at player for player
+		open virtual chest inventory with size 3 named "Minehut club" to player
+		format gui slot 13 of player with empty map named "&3Minehut club" with lore "", "&7View our content update posts", "&7and apply for staff! Support this", "&7platform!", "", "&3Click to join!" to run:
+			close player's inventory
+			send "<link:https://forums.minehut.com/clubs/313-plexpvp/>&3&lCLUB &8» &7To join our official minehut club, &3click here!<reset>" 
+			play sound "entity.chicken.egg" at pitch 0.8 at player for player
+
+			set {_x} to 1
+
+			loop 3 times:
+				set {_x} to {_x} + 0.2
+				play sound "entity.arrow.hit_player" at pitch {_x} at player for player
+				wait 4 ticks
+
+command store:
+	aliases: store, buy
+	trigger:
+		play sound "entity.chicken.egg" at pitch 0 at player for player
+		open virtual chest inventory with size 3 named "Official store" to player
+		format gui slot 13 of player with name tag named "&6Server store" with lore "", "&7Purchase ranks, rank upgrades,", "&7server boosters and more!", "&7donate and support us!", "", "&6Click to proceed!" to run:
+			close player's inventory
+			send "<link:https://plexpvp.buycraft.net/>&6&lSTORE &8» &7To proceed to our official store, &6click here!<reset>" 
+			play sound "entity.chicken.egg" at pitch 0.8 at player for player
+
+			set {_x} to 1
+
+			loop 3 times:
+				set {_x} to {_x} + 0.2
+				play sound "entity.arrow.hit_player" at pitch {_x} at player for player
+				wait 4 ticks
+
+on consume of potion:
+	wait a tick
+	set tool to air
+
+on region enter:
+	"%event-region%" doesn't contain "spawn"
+	player doesn't have permission "antifly.bypass"
+	set player's flight mode to false
+
+on command:
+	"%region at player%" contains "nofly"
+	command contains "fly"
+	player doesn't have permission "antifly.bypass"
+	cancel event
+	send "&cYou cannot do /fly here."
+
+on drop:
+	player's gamemode != creative:
+		metadata "drop" of player isn't set:
+			cancel event
+			play sound "entity.chicken.egg" at pitch 0.8 at player for player
+			send "&cPress Q again to drop your held item!" to player
+			set metadata "drop" of player to true
+			wait 2 seconds
+			clear metadata "drop" of player
+		else:
+			clear metadata "drop" of player
+
+on click:
+	event-entity is armor stand
+	player isn't "tastqhalloween"
+	cancel event
+
+on join:
+	"%player%" contains "*"
+	kick player due to "Bedrock edition is disabled on this server!"
+
+on right click on stone cutter:
+	cancel event
+
+on craft:
+	player isn't op
+	cancel event
+
+on command "minecraft:me":
+	cancel event
+
+on click on anvil, hopper, barrel, note block, grindstone, blast furnace, stonecutter, brewing stand or oak trapdoor:
+	player is not op
+	cancel event
+
+command spawn:
+	trigger:
+		{combatLog::%player%} isn't set:
+			teleport player to {location::spawn}
+			send "&d&lPLEXPVP &8» &7You have been teleported to spawn!"
+			play sound "entity.arrow.hit_player" at pitch 2 at player for player
+		else:
+			send "&cYou can't do this command while in combat!"
+
+every 12 minutes:
+	broadcast "&d&lPLEXPVP &8» &7Clearing entities in 1 minute!"
+	wait 50 seconds
+	broadcast "&d&lPLEXPVP &8» &7Clearing entities in 10 seconds!"
+	wait 10 seconds
+	clear dropped items
+	broadcast "&d&lPLEXPVP &8» &7All entities have been cleared!"
+
+every 1563 seconds:
+	chance of 50%:
+		broadcast "&d&lFREE MONEY! &7You received &d$20 &7as a little gift!"
+		loop all players:
+			add 20 to loop-player's balance
+			play sound "entity.ender_eye.death" at pitch 2 at loop-players for loop-players
+	else:
+		broadcast "&d&lFREE XP! &7You received &d10 XP &7as a gift for playing!"
+		loop all players:
+			add 10 to {data::%loop-player's uuid%::experience}
+			play sound "entity.ender_eye.death" at pitch 2 at loop-players for loop-players
+
+command caverns:
+	aliases: cavern
+	trigger:
+		{combatLog::%player%} isn't set:
+			teleport player to {mine}
+			send "&6&lPLEXPVP &8» &7You have been teleported to the caverns!"
+			play sound "entity.arrow.hit_player" at pitch 2 at player for player
+		else:
+			send "&cYou can't do this command while in combat!"
+
+on explode:
+	cancel event
+
+on command:
+	player is not op:
+		command is "pl" or "plugins":
+			cancel event
+		command contains "bukkit":
+			cancel event
+
+command clearchat [<text>]:
+	aliases: cc
+	permission: chat.clear
+	permission message: &cNo permission
+	trigger:
+		send "%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%%nl%" to all players
+		broadcast "&c&lPLEXPVP &8» &7Chat has been cleared"
+		send "" to all players
+
+command mutechat [<text>]:
+	aliases: mc, chatmute, cm
+	permission: chat.mute
+	permission message: &cNo permission
+	trigger:
+		if {chat::mute} is set:
+			send "&7%nl%&c&lPLEXPVP &8» &7Chat has been unmuted%nl%&7" to all players
+			clear {chat::mute}
+		else:
+			send "&7%nl%&c&lPLEXPVP &8» &7Chat has been muted%nl%&7" to all players
+			set {chat::mute} to true
+
+command staffchat [<text>]:
+	aliases: sc
+	permission: chat.staff
+	permission message: &cNo permission
+	trigger:
+		if arg is set:
+			send "&6[SC] &e%player% &8» &e%colored arg%" to players where [input has permission "chat.staff"]
+		else:
+			if metadata "staff-chat" of player is set:
+				send "&6[SC] &7Staff chat disabled"
+				clear metadata "staff-chat" of player
+			else:
+				send "&6[SC] &7Staff chat enabled"
+				set metadata "staff-chat" of player to true
+
+on chat:
+	if metadata "staff-chat" of player is set:
+		if player has permission "chat.staff":
+			send "&6[SC] &e%player% &8» &e%colored message%" to players where [input has permission "chat.staff"]
+			cancel event
+			stop
+		else:
+			clear metadata "staff-chat" of player
+	if message starts with "##":
+		player has permission "chat.staff"
+		set message to substring of message from 2 to message's length
+		length of message > 0:
+			send "&6[SC] &e%player% &8» &e%colored message%" to players where [input has permission "chat.staff"]
+		cancel event
+		stop
+	if {chat::mute} is set:
+		player doesn't have permission "chat.mute"
+		cancel event
+		send "&cYou can't speak while the chat is muted."
+		stop
+
+every 180 seconds:
+	set {_type::*} to "&7Join our official discord with &b/discord!", "&7Check out the server rules with &b/rules!", "&7Join our official minehut club with &b/club!", "&b20%% OFF &7First Week Release Sale now active with &b/buy!" and "&7Use &b/caverns &7for a safe mine, perfect for beginners!"
+	set {_type} to a random element of {_type::*}
+	broadcast "&b&lNOTE &8» &7%{_type}%"
+
+#MAKE THE FUCKING RULES COMMAND, FUCK ME ITS RAW!!!!!!!!!
+
+command balance [<offlineplayer>]:
+	trigger:
+		arg-1 is set:
+			player != arg-1:
+				send formatted "&d&lPLEXPVP &8» &d%arg-1%'s &7balance is &d$%format(arg-1's balance)%!"
+			else:
+				send formatted "&d&lPLEXPVP &8» &7Your balance is &d$%format(player's balance)%!"
+		else:
+			send formatted "&d&lPLEXPVP &8» &7Your balance is &d$%format(player's balance)%!"
+command bal [<offlineplayer>]:
+	trigger:
+		arg-1 is set:
+			player != arg-1:
+				send formatted "&d&lPLEXPVP &8» &d%arg-1%'s &7balance is &d$%format(arg-1's balance)%!"
+			else:
+				send formatted "&d&lPLEXPVP &8» &7Your balance is &d$%format(player's balance)%!"
+		else:
+			send formatted "&d&lPLEXPVP &8» &7Your balance is &d$%format(player's balance)%!"
+command money [<offlineplayer>]:
+	trigger:
+		arg-1 is set:
+			player != arg-1:
+				send formatted "&d&lPLEXPVP &8» &d%arg-1%'s &7balance is &d$%format(arg-1's balance)%!"
+			else:
+				send formatted "&d&lPLEXPVP &8» &7Your balance is &d$%format(player's balance)%!"
+		else:
+			send formatted "&d&lPLEXPVP &8» &7Your balance is &d$%format(player's balance)%!"
+
+command baltop:
+	trigger:
+		send "&d&lPLEXPVP &8» &7This feature is coming soon!"
+command balancetop:
+	trigger:
+		send "&d&lPLEXPVP &8» &7This feature is coming soon!"
+
+command rules:
+	aliases: rule, rules
+	trigger:
+		open virtual chest inventory with size 3 named "Server rules" to player
+		play sound "entity.chicken.egg" at pitch 0 at player for player
+		format gui slot 11 of player with glowing book and quill named "&dGameplay rules" with lore "", "&7Click to view the gameplay rules!", "" to run:	
+			close player's inventory
+			play sound "ui.button.click" at volume 10 at player for player
+			send ""
+			send "&d&lGAMEPLAY RULES"
+			send ""
+			send "&8» &7Don't use blacklisted modifications."
+			send "&8» &7Don't abuse any bugs."
+			send "&8» &7Don't fake the use of hacks or blacklisted modifications."
+			send "&8» &7Don't consistently spawn camp."
+			send "&8» &7No boosting."
+			send "&8» &7No camping."
+			send "&8» &7No afk/automining."
+			send ""
+
+		format gui slot 13 of player with glowing book and quill named "&dGlobal rules" with lore "", "&7Click to view the global rules!", "" to run:
+			close player's inventory
+			play sound "ui.button.click" at volume 10 at player for player
+			send ""
+			send "&d&lGLOBAL RULES"
+			send ""
+			send "&8» &7Don't excessively spam in chat."
+			send "&8» &7Don't excessively use upper case in your messages."
+			send "&8» &7Don't be disrespectful to staff or players."
+			send "&8» &7Don't be inappropriate"
+			send "&8» &7Don't use death threats or encourage suicide."
+			send "&8» &7Don't be discriminative in anyway shape or form."
+			send "&8» &7Don't advertise"
+			send ""
+
+		format gui slot 15 of player with glowing book and quill named "&dCommunication rules" with lore "", "&7Click to view the communication rules!", "" to run:
+			close player's inventory
+			play sound "ui.button.click" at volume 10 at player for player
+			send ""
+			send "&d&lCOMMUNICATION RULES"
+			send ""
+			send "&8» &7Don't evade bans/mutes in anyway."
+			send "&8» &7Don't be disruptive to the community"
+			send "&8» &7Don't bot the server."
+			send "&8» &7Don't have an inappropriate skin or name."
+			send "&8» &7No IRL (in real life) transactions."
+			send "&8» &7Don't misuse reports."
+			send ""
+
+on right click on player:
+	uncolored entity's name = "RIGHT CLICK"
+	cancel event
+	block 2 meters below entity = purpur block
+	cancel event
+	set {_level} to {data::%player's uuid%::level} ? 1
+	
+	set {_inventory} to chest inventory with 5 rows named "Medic"
+
+	set slot 10 of {_inventory} to 8 of golden apple named "&68 Golden Apples" with lore "", "&7Costs &f16 diamonds" and ""
+
+	if {_level} >= 5:
+		set slot 12 of {_inventory} to splash potion of health named "&dSplash Potion of Healing" with lore "", "&7Costs &f$50" and "" with no nbt
+	else:
+		set slot 12 of {_inventory} to barrier named "&cItem Unavailable" with lore "", "&7Reach &fLevel 5&7 to buy this" and ""
+
+	if {_level} >= 10:
+		set slot 14 of {_inventory} to potion of speed named "&bPotion of Swiftness" with lore "", "&7Costs &f$100" and "" with no nbt
+	else:
+		set slot 14 of {_inventory} to barrier named "&cItem Unavailable" with lore "", "&7Reach &fLevel 10&7 to buy this" and ""
+
+	set slot 16 of {_inventory} to 16 of arrow named "&b16 Arrows" with lore "", "&7Costs &f4 gold ingots" and ""
+
+	if {_level} >= 20:
+		set slot 30 of {_inventory} to sweet berries named "&cMerry berries" with lore "", "&7Costs &f$75" and ""
+		set slot 32 of {_inventory} to {presentt} named "&dChristmas snack" with lore "", "&7Costs &f$150" and ""
+	else:
+		set slot 30 of {_inventory} to barrier named "&cItem Unavailable" with lore "", "&7Reach &fLevel 20&7 to buy this" and ""
+		set slot 32 of {_inventory} to barrier named "&cItem Unavailable" with lore "", "&7Reach &fLevel 20&7 to buy this" and ""
+
+	set metadata "medic" of player to {_inventory}
+
+	play sound "entity.chicken.egg" at pitch 0 at player for player
+	open {_inventory} to player
+	
+on inventory click:
+	player's current inventory = metadata "medic" of player
+	cancel event
+	event-inventory = metadata "medic" of player
+
+	if event-slot's name = "&cItem Unavailable":
+		play sound "ui.button.click" with pitch 2 at player for player
+	else:
+		if index of event-slot = 10:
+			if player has 16 diamonds:
+				if player can hold 8 golden apple:
+					play sound "entity.arrow.hit_player" with pitch 2 at player for player
+					remove 16 diamonds from player
+					give 8 of golden apple to player
+				else:
+					send "&b&lMEDIC &8» &7You can't fit 8 golden apples in your inventory!"
+					play sound "ui.button.click" with pitch 2 at player for player
+			else:
+				send "&b&lMEDIC &8» &7You can't afford that!"
+				play sound "ui.button.click" with pitch 2 at player for player
+		else if index of event-slot is 12:
+			if player's balance >= 50:
+				if player can hold splash potion of strong health:
+					play sound "entity.arrow.hit_player" with pitch 2 at player for player
+					give player splash potion of health
+					remove 50 from player's balance
+				else:
+					send "&b&lMEDIC &8» &7You can't fit a splash potion of health in your inventory!"
+					play sound "ui.button.click" with pitch 2 at player for player
+			else:
+				send "&b&lMEDIC &8» &7You can't afford that!"
+				play sound "ui.button.click" with pitch 2 at player for player
+		else if index of event-slot is 14:
+			if player's balance >= 100:
+				if player can hold potion of strong speed:
+					play sound "entity.arrow.hit_player" with pitch 2 at player for player
+					give player potion of strong speed
+					remove 100 from player's balance
+				else:
+					send "&b&lMEDIC &8» &7You can't fit a potion of speed in your inventory!" 
+					play sound "ui.button.click" with pitch 2 at player for player
+			else:
+				send "&b&lMEDIC &8» &7You can't afford that!"
+				play sound "ui.button.click" with pitch 2 at player for player
+		else if index of event-slot is 16:
+			if player has 4 gold ingot:
+				if player can hold 16 arrows:
+					play sound "entity.arrow.hit_player" with pitch 2 at player for player
+					remove 4 gold ingot from player
+					give 16 arrows to player
+				else:
+					send "&b&lMEDIC &8» &7You can't fit 16 arrows in your inventory!"
+					play sound "ui.button.click" with pitch 2 at player for player
+			else:
+				send "&b&lMEDIC &8» &7You can't afford that!"
+				play sound "ui.button.click" with pitch 2 at player for player
+		else if index of event-slot is 30:
+			if player's balance >= 75:
+				if player can hold sweet berries:
+					play sound "entity.arrow.hit_player" with pitch 2 at player for player
+					give player sweet berries named "&cMerry berries"
+					remove 75 from player's balance
+				else:
+					send "&b&lMEDIC &8» &7You can't fit a golden snack in your inventory!"
+					play sound "ui.button.click" with pitch 2 at player for player
+			else:
+				send "&b&lMEDIC &8» &7You can't afford that!"
+				play sound "ui.button.click" with pitch 2 at player for player
+		else if index of event-slot is 32:
+			if player's balance >= 125:
+				if player can hold player skull:
+					play sound "entity.arrow.hit_player" with pitch 2 at player for player
+					give player {presentt} named "&dChristmas snack"
+					remove 125 from player's balance
+				else:
+					send "&b&lMEDIC &8» &7You can't fit a platinum snack in your inventory!"
+					play sound "ui.button.click" with pitch 2 at player for player
+			else:
+				send "&b&lMEDIC &8» &7You can't afford that!"
+				play sound "ui.button.click" with pitch 2 at player for player 
+
+on right click with sweet berries:
+	metadata "snack" of player is set:
+		send "&cThere's a delay between eating snacks. Don't put on weight."
+		cancel event
+		stop
+	else:
+		cancel event
+		remove 1 of tool from tool
+		play sound "entity.generic.eat" at player for player
+		heal player by 2
+		apply speed to player for 5 seconds
+		apply strength to player for 5 seconds
+		set metadata "snack" of player to true
+		wait a minute
+		clear metadata "snack" of player
+
+on right click with player head:
+	if item's name = "&6Easter snack":
+		metadata "snack" of player is set:
+			send "&cThere's a delay between eating snacks. Don't put on weight."
+			cancel event
+			stop
+		else:
+			cancel event
+			remove 1 of tool from tool
+			play sound "entity.generic.eat" at player for player
+			extinguish player
+			apply speed 2 to player for 4 seconds
+			apply strength 2 to player for 4 seconds
+			heal player by 4
+			set metadata "snack" of player to true
+			wait a minute
+			clear metadata "snack" of player
+
+on right click on player:
+	uncolored name of entity = "RIGHT CLICK"
+	block 2 meters below entity = bedrock
+	cancel event
+	set {_inventory} to chest inventory with 6 rows named "Material Merchant"
+	loop integers from 45 to 53:
+		set slot loop-value of {_inventory} to dark gray glass pane named "&7"
+	loop integers from 0 to 8:
+		set slot loop-value of {_inventory} to dark gray glass pane named "&7"
+	set slot 49 of {_inventory} to gold ingot named "&6&lSELL ITEMS" with lore "", "&7Sell items for &6$0" and ""
+	set metadata "material-merchant" of player to {_inventory}
+	play sound "entity.bat.takeoff" at player for player
+	open {_inventory} to player
+
+on inventory click:
+	event-inventory = metadata "material-merchant" of player
+	if index of event-slot >= 45:
+		cancel event
+	if index of event-slot < 9:
+		cancel event
+
+	index of event-slot = 49
+	
+	set {_level} to {data::%player's uuid%::level} ? 1
+	set {_multi} to (1 - {_level} / 100)
+
+	set {_total} to 0
+	loop integers from 9 to 44:
+		set {_item} to slot loop-value of event-inventory
+
+		if {_item} is iron ingot:
+			add {_multi} * 1.56 * item amount of {_item} to {_total}
+		else if {_item} is gold ingot:
+			add {_multi} * 2.34 * item amount of {_item} to {_total}
+		else if {_item} is diamond:
+			add {_multi} * 3.91 * item amount of {_item} to {_total}
+		else if {_item} is obsidian:
+			add {_multi} * 15.63 * item amount of {_item} to {_total}
+		else if {_item} is coal:
+			add {_multi} * 1.21 * item amount of {_item} to {_total}
+		else if {_item} is cobblestone:
+			add {_multi} * 1 * item amount of {_item} to {_total}
+		else:
+			give player {_item}
+
+		set slot loop-value of event-inventory to air
+	
+
+	if {_total} = 0:
+		send "&6&lMERCHANT &8» &7You sold nothing, put something in to sell!"
+		close player's inventory
+		play sound "ui.button.click" with volume 100 and pitch 2 at player for player
+	else:
+		send "&6&lMERCHANT &8» &7Sold all items for &6$%floor({_total})%"
+		add floor({_total}) to player's balance
+		updateScoreboard(player)
+		play sound "entity.arrow.hit_player" with pitch 2 at player for player
+
+on inventory click:
+	player's current inventory = metadata "material-merchant" of player
+	wait a tick
+	set {_inventory} to metadata "material-merchant" of player
+
+	set {_level} to {data::%player's uuid%::level} ? 1
+	set {_multi} to (1 - {_level} / 100)
+
+	set {_total} to 0
+	loop integers from 9 to 44:
+		set {_item} to slot loop-value of {_inventory}
+
+		if {_item} is iron ingot:
+			add {_multi} * 1.56 * item amount of {_item} to {_total}
+		else if {_item} is gold ingot:
+			add {_multi} * 2.34 * item amount of {_item} to {_total}
+		else if {_item} is diamond:
+			add {_multi} * 3.91 * item amount of {_item} to {_total}
+		else if {_item} is obsidian:
+			add {_multi} * 15.63 * item amount of {_item} to {_total}
+		else if {_item} is coal:
+			add {_multi} * 1.21 * item amount of {_item} to {_total}
+		else if {_item} is cobblestone:
+			add {_multi} * 1 * item amount of {_item} to {_total}
+
+	set slot 49 of {_inventory} to gold ingot named "&6&lSELL ITEMS" with lore "", "&7Sell items for &6$%floor({_total})%" and ""
+
+on inventory close:
+	player's current inventory = metadata "material-merchant" of player
+	set {_inventory} to metadata "material-merchant" of player
+
+	loop integers from 9 to 44:
+		give player slot loop-value of {_inventory}
+
+on right click on player:
+	uncolored name of entity = "RIGHT CLICK"
+	block 2 meters below entity = end portal frame
+	cancel event
+	if metadata "guide" of player isn't set:
+		set metadata "guide" of player to true
+		set {_prefix} to "&6&lGUIDE &8»"
+		set metadata "blacksmith" of player to true
+		send "%{_prefix}% &7Hello Stranger! Welcome to &6PlexPvP!" to player
+		play sound "entity.arrow.hit_player" with volume 1 and pitch 2 at player for player
+		wait 3 seconds
+		send "%{_prefix}% &7Head over to the &e/cavern &7to start earning xp to levelup!" to player
+		play sound "entity.arrow.hit_player" with volume 1 and pitch 2 at player for player
+		wait 4 seconds
+		send "%{_prefix}% &7Upgrade your &ePickaxe &7and &eSword &7with the &6Blacksmith &7in the spawn area!" to player
+		play sound "entity.arrow.hit_player" with volume 1 and pitch 2 at player for player
+		wait 5 seconds
+		send "%{_prefix}% &7Sell your items with the &6Merchant &7at spawn" to player
+		play sound "entity.arrow.hit_player" with volume 1 and pitch 2 at player for player
+		wait 4 seconds
+		send "%{_prefix}% &6Upgrade &7your materials and climb the level leaderboard to recieve &e/payouts &7at the end of the season!" to player
+		play sound "entity.arrow.hit_player" with volume 1 and pitch 2 at player for player
+		wait 5 seconds
+		send "%{_prefix}% &7Join our discord by using &e/discord&7 and make sure to read the rules! &e/rules!" to player
+		play sound "entity.arrow.hit_player" with volume 1 and pitch 2 at player for player
+		clear metadata "guide" of player
+	else:
+		send "&c&lGUIDE &8» &7Let the guide speak..." to player
+		play sound "ui.button.click" with volume 100 and pitch 2 at player for player
+
+on right click on player:
+	uncolored name of entity = "RIGHT CLICK"
+	block 2 meters below entity = polished diorite
+	cancel event
+	make player execute "/ah"
+	play sound "entity.chicken.egg" at pitch 0 at player for player
+
+on right click on player:
+	uncolored name of entity = "RIGHT CLICK"
+	block 2 meters below entity = sticky piston
+	cancel event
+	make player execute "/cf"
+
+on right click on player:
+	uncolored name of entity = "RIGHT CLICK"
+	block 2 meters below entity = mossy cobblestone
+	cancel event
+	play sound "entity.arrow.hit_player" at pitch 2 at player for player
+	{playerclan::%uuid of player%} is set:
+		make player execute "/clans info"
+	else {playerclan::%{_uuid}%} is not set:
+		send "&d&lPLEX &8» &7Please create a clan to view this! &d/clan create"
+
+on right click on player:
+	uncolored name of entity = "RIGHT CLICK"
+	block 2 meters below entity = soul sand
+	cancel event
+	make player execute "/cosmetics"
+
+on right click on player:
+	uncolored name of entity = "RIGHT CLICK"
+	player's held item is trident
+	cancel event
+	wait 3 ticks
+	close player's inventory
+
+command /broadcast [<text>]:
+	permission: *
+	trigger:
+		arg-1 is set
+		broadcast ""
+		broadcast "&3&lPLEXPVP &8» &f%arg-1%"
+		broadcast ""
+		play sound "entity.player.levelup" for all players
+
+command /bin [<text>]:
+	trigger:
+		if player has permission "vip":
+			open virtual chest inventory with size 3 named "Bin" to player
+		else:
+			send "&3&lPLEXPVP &8» &7You must be &8[&aVIP&8] &7rank to use /bin!"
+
+on region enter:
+	if "%event-region%" contains "TeleportPad":
+		set {_number} to random integer between 1 and 7
+		teleport player to {combatpos::%{_number}%}
+
+on spawn of a chicken:
+	cancel the event
+
+on join:
+	set player's tablist header to "%nl%&eLoading...%nl%"

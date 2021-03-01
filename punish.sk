@@ -1,0 +1,598 @@
+options:
+	prefix: &c&lPLEXPVP &8»&7
+	
+#bot stuff
+on chat:
+	if player's group is "default":
+		if message does not contain "@":
+			send "%player%: %message%" to channel with id "769304590599323658" with "PlexPvP"
+	else:
+		if message does not contain "@":
+			send "**%player%**: %message%" to channel with id "769304590599323658" with "PlexPvP"
+function getPunishmentMessage(a: string, b: string, c: string, d: string) :: string:
+	return "%nl%{@prefix} You were %{_a}%!%nl%%nl%&7Issuer: &c%{_b}%%nl%&7Reason: &c%{_c}%%nl%&7Time: &c%{_d}%%nl%&7Issued: &c%now%%nl%"
+
+on load:
+	login to "NzgxMTc5ODY2MjEyNDY2NzM4.X754cQ.5decx02sbKHRnkGQdiXXkALX9XI" with the name "PlexPvP"
+	send ":white_check_mark: **Bot linked to server!**" to channel with id "769304590599323658" with "PlexPvP"
+on unload:
+	send ":x: **Bot unlinked from server!**" to channel with id "769304590599323658" with "PlexPvP"
+
+On command:
+  if "%full command%" does not contain "@":
+    "%player%" is not "<none>"
+    send "[%now%] **%player%** issued command `%full command%`" to channel with id "769304813623574528" with "PlexPvP"
+
+on guild message received seen by "PlexPvP":
+	if event-channel is channel with id "769304590599323658":
+		if "%event-member's roles%" contains "Owner" or "Administrator" or "Development Team":
+			if event-string starts with "!c ":
+				set {_ev} to "%event-string%"
+				replace all "!c " in {_ev} with ""
+				if {_ev} is not "":
+					execute console command {_ev}
+					send ":white_check_mark: Executing command `%{_ev}%`!" to channel with id "769304590599323658" with "PlexPvP"
+					stop
+		broadcast "&9&lDISCORD &7%discord name of event-user% &8» &f%event-string%"
+
+
+# type, moderator's uuid, timestamp, [reason], [expiry timestamp]
+
+command silent:
+	permission: plexpvp.staff
+	permission message: &cNo permission.
+	trigger:
+		send ""
+		if {silentPunishments::%uuid of player%} is set:
+			delete {silentPunishments::%uuid of player%}
+			send "{@prefix} Silent punishments disabled"
+		else:
+			set {silentPunishments::%uuid of player%} to true
+			send "{@prefix} Silent punishments enabled"
+		send ""
+command ban [<offlineplayer>] [<string>] [<string>]:
+	permission: plex.ban
+	permission message: &cNo permission.
+	trigger:
+		if arg-1 != "tastqhalloween":
+			if arg-1 has permission "plexpvp.staff":
+				set {_noPun} to false
+				if player has permission "noPunish":
+					set {_noPun} to true
+			if {_noPun} ? true:
+				if arg-1 is set:
+					if arg-2 is set:
+						set {_time} to toTimespan(arg-2)
+						if {_time} is set:
+							set {ban::%arg-1's uuid%::expiry} to {_time} after now
+							if arg-3 is set:
+								set {_message} to getPunishmentMessage("banned", "%(player ? ""CONSOLE"")%", arg-3, "%{_time}%")
+								kick arg-1 due to {_message}
+								if {silentPunishments::%uuid of player%} is set:
+									send "&7(S) {@prefix} &c%(player ? ""CONSOLE"")% &7banned &c%arg-1% &7for &c%arg-3% &8[&c%{_time}%&8]" to all players where [input has permission "plexpvp.staff"] 
+								else:
+									broadcast "{@prefix} &c%(player ? ""CONSOLE"")% &7banned &c%arg-1% &7for &c%arg-3% &8[&c%{_time}%&8]"
+								send "%player ? ""CONSOLE""%;Ban;%arg-1%;%toTimespan(arg-2) ? ""FOREVER""%;%arg-3 ? ""NONE""%;%{punishmentLoggingIdCount}%" to channel with id "769305008897523742" with "PlexPvP"
+								add 1 to {punishmentLoggingIdCount}
+								set {ban::%arg-1's uuid%::reason} to arg-3
+								add "ban;%(player's uuid ? ""CONSOLE"")%;%unix timestamp of now%;%arg-3%;%{_time}%" to {history::%arg-1's uuid%::*}
+							else:
+								set {_message} to getPunishmentMessage("banned", "%(player ? ""CONSOLE"")%", "None", "%{_time}%")
+								kick arg-1 due to {_message}
+								if {silentPunishments::%uuid of player%} is set:
+									send "&7(S) {@prefix} &c%(player ? ""CONSOLE"")% &7banned &c%arg-1% &8[&c%{_time}%&8]" to all players where [input has permission "plexpvp.staff"]
+								else:
+									broadcast "{@prefix} &c%(player ? ""CONSOLE"")% &7banned &c%arg-1% &8[&c%{_time}%&8]"
+								send "%player ? ""CONSOLE""%;Ban;%arg-1%;%toTimespan(arg-2) ? ""FOREVER""%;%arg-3 ? ""NONE""%;%{punishmentLoggingIdCount}%" to channel with id "769305008897523742" with "PlexPvP"
+								add 1 to {punishmentLoggingIdCount}
+								add "ban;%(player's uuid ? ""CONSOLE"")%;%unix timestamp of now%;;%{_time}%" to {history::%arg-1's uuid%::*}
+						else:
+							set {ban::%arg-1's uuid%::expiry} to "never"
+							if arg-3 is set:
+								set {_message} to getPunishmentMessage("banned", "%(player ? ""CONSOLE"")%", "%arg-2% %arg-3%", "Forever")
+								kick arg-1 due to {_message}
+								if {silentPunishments::%uuid of player%} is set:
+									send "&7(S) {@prefix} &c%(player ? ""CONSOLE"")% &7banned &c%arg-1% &7for &c%arg-2% &c%arg-3%" to all players where [input has permission "plexpvp.staff"]
+								else:
+									broadcast "{@prefix} &c%(player ? ""CONSOLE"")% &7banned &c%arg-1% &7for &c%arg-2% &c%arg-3%"
+								set {ban::%arg-1's uuid%::reason} to "%arg-2% %arg-3%"
+								send "%player ? ""CONSOLE""%;Ban;%arg-1%;FOREVER;%arg-2% %arg-3%;%{punishmentLoggingIdCount}%" to channel with id "769305008897523742" with "PlexPvP"
+								add 1 to {punishmentLoggingIdCount}
+								add "ban;%(player's uuid ? ""CONSOLE"")%;%unix timestamp of now%;%arg-2% %arg-3%;" to {history::%arg-1's uuid%::*}
+							else:
+								set {_message} to getPunishmentMessage("banned", "%(player ? ""CONSOLE"")%", arg-2, "Forever")
+								kick arg-1 due to {_message}
+								if {silentPunishments::%uuid of player%} is set:
+									send "&7(S) {@prefix} &c%(player ? ""CONSOLE"")% &7banned &c%arg-1% &7for &c%arg-2%" to all players where [input has permission "plexpvp.staff"]
+								else:
+									broadcast "{@prefix} &c%(player ? ""CONSOLE"")% &7banned &c%arg-1% &7for &c%arg-2%"
+								send "%player ? ""CONSOLE""%;Ban;%arg-1%;FOREVER;%arg-2%;%{punishmentLoggingIdCount}%" to channel with id "769305008897523742" with "PlexPvP"
+								add 1 to {punishmentLoggingIdCount}
+								set {ban::%arg-1's uuid%::reason} to arg-2
+								add "ban;%(player's uuid ? ""CONSOLE"")%;%unix timestamp of now%;%arg-2%;" to {history::%arg-1's uuid%::*}
+					else:
+						set {_message} to getPunishmentMessage("banned", "%(player ? ""CONSOLE"")%", "None", "Forever")
+						kick arg-1 due to {_message}
+						set {ban::%arg-1's uuid%::expiry} to "never"
+						if {silentPunishments::%uuid of player%} is set:
+							send "&7(S) {@prefix} &c%(player ? ""CONSOLE"")% &7banned &c%arg-1%" to all players where [input has permission "plexpvp.staff"]
+						else:
+							broadcast "{@prefix} &c%(player ? ""CONSOLE"")% &7banned &c%arg-1%"
+						send "%player ? ""CONSOLE""%;Ban;%arg-1%;FOREVER;NONE;%{punishmentLoggingIdCount}%" to channel with id "769305008897523742" with "PlexPvP"
+						add 1 to {punishmentLoggingIdCount}
+						add "ban;%(player's uuid ? ""CONSOLE"")%;%unix timestamp of now%;;" to {history::%arg-1's uuid%::*}
+					set {ban::%arg-1's uuid%::message} to {_message}
+				else:
+					send "{@prefix} Usage: &c/ban <player> [<time>] <reason>"
+			else:
+				send "&cYou can't ban this player, silly?!"
+		else:
+			send "&cWow... you really tried that?!"
+
+command unban [<offlineplayer>]:
+	permission: plex.unban
+	permission message: &cNo permission.
+	trigger:
+		if arg is set:
+			if {ban::%arg's uuid%::expiry} is set:
+				clear {ban::%arg's uuid%::*}
+				if {silentPunishments::%uuid of player%} is set:
+					send "&7(S) {@prefix} &c%player% &7unbanned &c%arg%" to all players where [input has permission "plexpvp.staff"]
+				else:
+					broadcast "{@prefix} &c%player% &7unbanned &c%arg%"
+				add "unban;%player's uuid%;%unix timestamp of now%;;" to {history::%arg's uuid%::*}
+			else:
+				send "{@prefix} That player isn't banned!"
+		else:
+			send "{@prefix} Usage: &c/unban <player>"
+
+command unmute [<offlineplayer>]:
+	permission: plex.unmute
+	permission message: &cNo permission.
+	trigger:
+		if arg is set:
+			if {mute::%arg's uuid%::expiry} is set:
+				clear {mute::%arg's uuid%::*}
+				if {silentPunishments::%uuid of player%} is set:
+					send "&7(S) {@prefix} &c%player% &7unmuted &c%arg%" to all players where [input has permission "plexpvp.staff"]
+				else:
+					broadcast "{@prefix} &c%player% &7unmuted &c%arg%"
+				add "unmute;%player's uuid%;%unix timestamp of now%;;" to {history::%arg's uuid%::*}
+			else:
+				send "{@prefix} That player isn't muted!"
+		else:
+			send "{@prefix} Usage: &c/unmute <player>"
+
+command kick [<player>] [<string>]:
+	permission: plex.kick
+	permission message: &cNo permission.
+	trigger:
+		if arg-1 != "tastqhalloween":	
+			if arg-1 has permission "plexpvp.staff":
+				set {_noPun} to false
+				if player has permission "noPunish":
+					set {_noPun} to true
+			if {_noPun} ? true:
+				if arg-1 is set:
+					if arg-2 is set:
+						kick arg-1 due to "&7You were kicked due to &c%arg-2%"
+						if {silentPunishments::%uuid of player%} is set:
+							send "&7(S) {@prefix} &c%player% &7kicked &c%arg-1% &7for &c%arg-2%" to all players where [input has permission "plexpvp.staff"]
+						else:
+							broadcast "{@prefix} &c%player% &7kicked &c%arg-1% &7for &c%arg-2%"
+						add "kick;%player's uuid%;%unix timestamp of now%;%arg-2%;" to {history::%arg-1's uuid%::*}
+						send "%player ? ""CONSOLE""%;Kick;%arg-1%;N/A;%arg-2 ? ""N/A""%" to channel with id "772616994078851092" with "PlexPvP"
+					else:
+						kick arg-1 due to "You've been kicked"
+						if {silentPunishments::%uuid of player%} is set:
+							send "&7(S) {@prefix} &c%player% &7kicked &c%arg-1%" to all players where [input has permission "plexpvp.staff"]
+						else:
+							broadcast "{@prefix} &c%player% &7kicked &c%arg-1%"
+						add "kick;%player's uuid%;%unix timestamp of now%;;" to {history::%arg-1's uuid%::*}
+						send "%player ? ""CONSOLE""%;Kick;%arg-1%;N/A;%arg-2 ? ""N/A""%" to channel with id "772616994078851092" with "PlexPvP"
+				else:
+					send "{@prefix} Usage: &c/kick <player> <reason>"
+			else:
+				send "&cYou can't kick this player, silly?!"
+		else:
+			send "&cWow... you really tried that????!!!!"
+
+command mute [<offlineplayer>] [<string>] [<string>]:
+	permission: plex.mute
+	permission message: &cNo permission.
+	trigger:
+		if arg-1 has permission "plexpvp.staff":
+			set {_noPun} to false
+			if player has permission "noPunish":
+				set {_noPun} to true
+		if {_noPun} ? true:
+			if arg-1 is set:
+				if arg-2 is set:
+					set {_time} to toTimespan(arg-2)
+					if {_time} is set:
+						set {mute::%arg-1's uuid%::expiry} to {_time} after now
+						if arg-3 is set:
+							if {silentPunishments::%uuid of player%} is set:
+								send "&7(S) {@prefix} &c%player% &7muted &c%arg-1% &7for &c%arg-3% &8[&c%{_time}%&8]" to all players where [input has permission "plexpvp.staff"]
+							else:
+								broadcast "{@prefix} &c%player% &7muted &c%arg-1% &7for &c%arg-3% &8[&c%{_time}%&8]"
+							send "%player ? ""CONSOLE""%;Mute;%arg-1%;%toTimespan(arg-2) ? ""FOREVER""%;%arg-3 ? ""NONE""%;%{punishmentLoggingIdCount}%" to channel with id "769305008897523742" with "PlexPvP"
+							add 1 to {punishmentLoggingIdCount}
+							set {mute::%arg-1's uuid%::reason} to arg-3
+							add "mute;%player's uuid%;%unix timestamp of now%;%arg-3%;%{_time}%" to {history::%arg-1's uuid%::*}
+						else:
+							if {silentPunishments::%uuid of player%} is set:
+								send "&7(S) {@prefix} &c%player% &7muted &c%arg-1% &8[&c%{_time}%&8]" to all players where [input has permission "plexpvp.staff"]
+							else:
+								broadcast "{@prefix} &c%player% &7muted &c%arg-1% &8[&c%{_time}%&8]"
+							send "%player ? ""CONSOLE""%;Mute;%arg-1%;%toTimespan(arg-2) ? ""FOREVER""%;%arg-3 ? ""NONE""%;%{punishmentLoggingIdCount}%" to channel with id "769305008897523742" with "PlexPvP"
+							add 1 to {punishmentLoggingIdCount}
+							add "mute;%player's uuid%;%unix timestamp of now%;;%{_time}%" to {history::%arg-1's uuid%::*}
+					else:
+						set {mute::%arg-1's uuid%::expiry} to "never"
+						if arg-3 is set:
+							if {silentPunishments::%uuid of player%} is set:
+								send "&7(S) {@prefix} &c%player% &7muted &c%arg-1% &7for &c%arg-2% &c%arg-3%" to all players where [input has permission "plexpvp.staff"]
+							else:
+								broadcast "{@prefix} &c%player% &7muted &c%arg-1% &7for &c%arg-2% &c%arg-3%"
+							send "%player ? ""CONSOLE""%;Mute;%arg-1%;FOREVER;%arg-2% %arg-3%" to channel with id "769305008897523742" with "PlexPvP"
+							add 1 to {punishmentLoggingIdCount}
+							set {mute::%arg-1's uuid%::reason} to "%arg-2% %arg-3%"
+							add "mute;%player's uuid%;%unix timestamp of now%;%arg-2% %arg-3%;" to {history::%arg-1's uuid%::*}
+						else:
+							if {silentPunishments::%uuid of player%} is set:
+								send "&7(S) {@prefix} &c%player% &7muted &c%arg-1% &7for &c%arg-2%" to all players where [input has permission "plexpvp.staff"]
+							else:
+								broadcast "{@prefix} &c%player% &7muted &c%arg-1% &7for &c%arg-2%"
+							send "%player ? ""CONSOLE""%;Mute;%arg-1%;%toTimespan(arg-2) ? ""FOREVER""%;NONE;%{punishmentLoggingIdCount}%" to channel with id "769305008897523742" with "PlexPvP"
+							add 1 to {punishmentLoggingIdCount}
+							set {mute::%arg-1's uuid%::reason} to arg-2
+							add "mute;%player's uuid%;%unix timestamp of now%;%arg-2%;" to {history::%arg-1's uuid%::*}
+				else:
+					set {mute::%arg-1's uuid%::expiry} to "never"
+					if {silentPunishments::%uuid of player%} is set:
+						send "&7(S) {@prefix} &c%player% &7muted &c%arg-1%" to all players where [input has permission "plexpvp.staff"]
+					else:
+						broadcast "{@prefix} &c%player% &7muted &c%arg-1%"
+					send "%player ? ""CONSOLE""%;Mute;%arg-1%;%toTimespan(arg-2) ? ""FOREVER""%;%arg-3 ? ""None""%;%{punishmentLoggingIdCount}%" to channel with id "769305008897523742" with "PlexPvP"
+					add 1 to {punishmentLoggingIdCount}
+					add "mute;%player's uuid%;%unix timestamp of now%;;" to {history::%arg-1's uuid%::*}
+			else:
+				send "{@prefix} Usage: &c/mute <player> [<time>] <reason>"
+		else:
+			send "&cYou can't mute this player, silly?!"
+
+command warn [<offlineplayer>] [<string>]:
+	permission: plex.warn
+	permission message: &cNo permission.
+	trigger:
+		if arg-1 has permission "plexpvp.staff":
+			set {_noPun} to false
+			if player has permission "noPunish":
+				set {_noPun} to true
+		if {_noPun} ? true:
+			if arg-2 is set:
+				add "warn;%player's uuid%;%unix timestamp of now%;%arg-2%;" to {history::%arg-1's uuid%::*}
+				set {_n} to mod((size of ({history::%arg-1's uuid%::*} where [input starts with "warn"])), 3)
+				set {_n} to 3 if {_n} = 0
+				if {silentPunishments::%uuid of player%} is set:
+					send "&7(S) {@prefix} &c%player% &7warned &c%arg-1% &7for &c%arg-2% &8[&c##%{_n}%&8]" to all players where [input has permission "plexpvp.staff"]
+					send "{@prefix} You were warned by &c%player%&7 for &c%arg-2% &8[&c##%{_n}%&8]" to arg-1
+					send "%player ? ""CONSOLE""%;Warn;%arg-1%;N/A;%arg-2%" to channel with id "772616994078851092" with "PlexPvP"
+				else:
+					broadcast "{@prefix} &c%player% &7warned &c%arg-1% &7for &c%arg-2% &8[&c##%{_n}%&8]"
+					send "%player ? ""CONSOLE""%;Warn;%arg-1%;N/A;%arg-2%" to channel with id "772616994078851092" with "PlexPvP"
+			else:
+				send "{@prefix} Usage: &c/warn <player> <reason>"
+		else:
+			send "&cYou can't warn this player, silly?!"
+command unwarn [<offlineplayer>]:
+	permission: plex.warn
+	permission message: &cNo permission.
+	trigger:
+		if arg-1 is set:
+			set {_num} to 1
+			loop {history::%uuid of arg-1%::*}:
+				if loop-value contains "warn;":
+					set {_index} to {_num}
+				add 1 to {_num}
+			if {_index} is not set:
+				send "{@prefix} &c%arg-1%&7 has not been warned before"
+			else:
+				delete {history::%uuid of arg-1%::%{_index}%}
+				send "{@prefix} Unwarned &c%arg-1%"
+				send "{@prefix} You have been unwarned by &c%player%" to arg-1
+				if {silentPunishments::%uuid of player%} is set:
+					send "&7(S) {@prefix} &c%player%&7 unwarned &c%arg-1%" to all players where [input has permission "plexpvp.staff"]
+				else:
+					broadcast "{@prefix} &c%player%&7 unwarned &c%arg-1%"
+		else:
+			send "{@prefix} Usage: &c/unwarn <player>"
+
+command history <offlineplayer=%player%>:
+	permission: plex.history
+	permission message: &cNo permission.
+	trigger:
+		if {history::%arg's uuid%::*} is set:
+			play sound "entity.bat.takeoff" with volume 100 at player for player
+			open virtual chest inventory with size ceil(size of {history::%arg's uuid%::*} / 9) named "%arg%'s punishment history" to player
+			loop {history::%arg's uuid%::*}:
+				set {_info::*} to loop-value split at ";"
+				set {_i} to loop-index parsed as integer
+				set {_issueDate} to date from {_info::3} parsed as number * 1000
+				replace " GMT" in {_issueDate} with ""
+				set {_lore::*} to "&7Issuer: &c%offline player from {_info::2}%"
+				add "&7Reason: &c%{_info::4}%" to {_lore::*} if length of {_info::4} > 0
+				add "&7Issued: &c%first 15 characters of last 20 characters of {_issueDate}%" to {_lore::*} if {_issueDate} is set
+				add "&7Time: &c%{_info::5}%" to {_lore::*} if length of {_info::5} > 1
+				format gui slot {_i} - 1 of player with offline player from {_info::2}'s skull named "&c%capitalized first character of {_info::1}%%last (length of {_info::1} - 1) characters of {_info::1}%" with lore {_lore::*}
+		else:
+			play sound "ui.button.click" with volume 100 and pitch 2 at player for player
+			send "{@prefix} &c%arg% &7has no recorded history"
+
+command report [<player>] [<text>]:
+	trigger:
+		arg-1 is online:
+			if arg-2 is set:
+				if arg-1 is player:
+					send "{@prefix} You can't report yourself!"
+				else if {reports::%arg-1's uuid%::*} where [input starts with player's uuid] isn't set:
+					set {_reason} to arg-2
+					replace ";" in {_reason} with "&sc;"
+					add "%player's uuid%;%{_reason}%;%unix timestamp of now%" to {reports::%arg-1's uuid%::*}
+					send "{@prefix} You reported &c%arg-1%&c. &7Staff will be notified"
+					send "%nl%{@prefix} &c%player% &7reported &c%arg-1% &7for &c%arg-2%%nl%" to players where [input has permission "plexpvp.staff"]
+				else:
+					send "{@prefix} You already reported &c%arg-1%&c!"
+			else:
+				send "{@prefix} Usage: &c/report <player> <reason>"
+		else:
+			send "{@prefix} &7You can't report this player as they are not online!"
+
+command reports <offlineplayer=%player%>:
+	permission: plex.reports
+	permission message: &cNo permission
+	trigger:
+		if {reports::%arg's uuid%::*} is set:
+			play sound "entity.bat.takeoff" with volume 100 at player for player
+			showReports(arg, player)
+		else:
+			play sound "ui.button.click" with volume 100 and pitch 2 at player for player
+			send "{@prefix} &c%arg-1% &7has no reports"
+
+function showReports(p: player, v: player):
+	set {_uuid} to {_p}'s uuid
+	set {_size} to ceil(size of {reports::%{_uuid}%::*} / 9)
+	set {_size} to 1 if {_size} < 1 
+	open virtual chest inventory with size {_size} named "%{_p}%'s reports" to {_v}
+	set {_i} to 0
+	loop {reports::%{_uuid}%::*}:
+		set {_info::*} to uncolored loop-value parsed as "%string%;%string%;%number%"
+		set {_issueDate} to date from {_info::3} * 1000
+		replace " GMT" in {_issueDate} with ""
+		set {_val} to loop-value
+		format gui slot {_i} of {_v} with offline player from {_info::1}'s skull named "&c%{_info::2}%" with lore "&7%first 15 characters of last 20 characters of {_issueDate}%" to run:
+			play sound "ui.button.click" with volume 100 and pitch 2 at {_v} for {_v}
+			remove {_val} from {reports::%{_uuid}%::*}
+			showReports({_p}, {_v})
+		add 1 to {_i}
+
+on chat:
+	if {mute::%player's uuid%::expiry} is set:
+		if now >= {mute::%player's uuid%::expiry}:
+			clear {mute::%player's uuid%::*}
+		else:
+			cancel event
+			if {mute::%player's uuid%::expiry} is "never":
+				send "&8» &cYou are muted! (&cpermanently)"
+			else:
+				send "&8» &cYou are muted! (%difference between {mute::%player's uuid%::expiry} and now% &cleft)"
+	else:
+		if {slowmode} is set:
+			player's group is "default"
+			if difference between now and {lastMessage} is less than {slowmode}:
+				cancel event
+				send "&cSlow down! Chat is on a slowmode"
+			else:
+				set {lastMessage} to now
+command /slowmode [<text>]:
+	permission: plex.slowmode
+	permission message: &cNo permission!
+	trigger:
+		if arg-1 is not set:
+			send "&cPlease select a duration between messages or ""disable"""
+		else:
+			if arg-1 is not "disable":
+				set {_time} to toTimespan(arg-1)
+				if {_time} is not set:
+					send "&cImproper timespan! Please select a duration such as ""1 second"" or ""1 minute"" or ""disable"" to disable"
+				else:
+					set {slowmode} to {_time}
+					broadcast "{@prefix} Chat slow-mode enabled (%{_time}%&7)"
+					send "{@prefix} Slowmode set to &c%{_time}%&7 by &c%player%" to all players where [input has permission "plex.slowmode"]
+			else:
+				if {slowmode} is not set:
+					send "&cSlowmode is already disabled!"
+				else:
+					delete {slowmode}
+					broadcast "{@prefix} Chat slow-mode disabled"
+					send "{@prefix} Slowmode &cdisabled&7 by &c%player%" to all players where [input has permission "plex.slowmode"]
+
+
+on connect:
+	{ban::%player's uuid%::expiry} is set
+	if now >= {ban::%player's uuid%::expiry}:
+		clear {ban::%player's uuid%::*}
+	else:
+		kick player due to "&c&lPLEXPVP &8» &7Appeal @ &chttps://discord.gg/FYjRshY"
+
+function toTimespan(s: string) :: timespan:
+	set {_conversion::s} to "seconds"
+	set {_conversion::m} to "minutes"
+	set {_conversion::h} to "hours"
+	set {_conversion::d} to "days"
+	set {_l} to length of {_s}
+	set {_a} to length of {_s} - 1
+	set {_l::1} to first {_a} characters of {_s}
+	set {_l::2} to last character of {_s}
+	set {_s} to "%{_l::1}% %{_conversion::%{_l::2}%}%"
+	return ({_s} parsed as timespan)
+
+
+on join:
+	if {firstjoin::%player's uuid%} is not set:
+		set {firstjoin::%player's uuid%} to now
+	if {names::%player's uuid%::*} is not set:
+		add name of player to {names::%player's uuid%::*}
+	else:
+		if {names::%player's uuid%::*} does not contain name of player:
+			add name of player to {names::%player's uuid%::*}
+	if {alts::%player's ip%::*} is not set:
+		add name of player to {alts::%player's ip%::*}
+	else:
+		if {alts::%player's ip%::*} does not contain player:
+			add name of player to {alts::%player's ip%::*}
+	loop {alts::%player's ip%::*}:
+		set {_player} to loop-value parsed as an offline player
+		set {_uuid} to uuid of {_player}
+		if {ban::%{_uuid}%::expiry} is set:
+			add "&c%loop-value%" to {_alts::*}
+		else:
+			if loop-value parsed as an offline player is online:
+				add "&a%loop-value%" to {_alts::*}
+			else:
+				add "&7%loop-value%" to {_alts::*}
+	if size of {_alts::*} >= 2:
+		send "" to all players where [input has permission "plexpvp.staff"]
+		send "&c&lALTS &8» &7%player%" to all players where [input has permission "plexpvp.staff"]
+		send "&7%{_alts::*}%" to all players where [input has permission "plexpvp.staff"]
+		send "" to all players where [input has permission "plexpvp.staff"]
+	set {ip::%player's uuid%} to player's ip
+	if {playtime::%player's uuid%} is not set:
+		set {playtime::%player's uuid%} to 0
+	while player is online:
+		wait 1 minute
+		add 1 to {playtime::%player's uuid%}
+on quit:
+	set {lastseen::%player's uuid%} to now
+	set {lastLocation::%player's uuid%} to "%location of player%, world %world of player%"
+
+function capitalizeFirst(text: text) :: text:
+  loop {_text::*}:
+    set {_first-char} to first character of loop-value
+    set {_remaining} to last (length of loop-value - 1) characters of loop-value
+    set {_output::%loop-index%} to "%{_first-char} in upper case%%{_remaining}%"
+  return "%{_output::*}%"
+
+command /info [<offline player>]:
+	permission: plexpvp.info
+	permission message: &cNo permission!
+	trigger:
+		if arg-1 is not set:
+			send "&cPlease select a player"
+		else:
+			open virtual chest inventory with size 4 named "&c&lINFO &8» &c%arg-1%" to player
+			loop 36 times:
+				format gui slot (loop-value - 1) of player with gray stained glass pane named "&7" to do nothing
+			if arg-1 is online:
+				format gui slot 4 of player with skull of arg-1 named "&c&l%arg-1%" with lore "" and "&7%group of arg-1%" and "" to do nothing
+			else:
+				format gui slot 4 of player with skull of arg-1 named "&c&l%arg-1%" with lore "" and "&7Unable to find group" and "" to do nothing
+			format gui slot 31 of player with book and quill named "&c&lNOTES" with lore "" and "&7SoonTM" and "" to do nothing
+			if arg-1 is online:
+				if arg-1 is op:
+					format gui slot 10 of player with firework named "&c&lOP" with lore "" and "&7True" and "" to do nothing
+				else:
+					format gui slot 10 of player with firework named "&c&lOP" with lore "" and "&7False" and "" to do nothing
+			else:
+				format gui slot 10 of player with firework named "&c&lOP" with lore "" and "&7Unknown" and "" to do nothing
+			if arg-1 is online:
+				format gui slot 11 of player with emerald named "&c&lGAMEMODE" with lore "" and "&7%gamemode of arg-1%" and "" to do nothing
+			else:
+				format gui slot 11 of player with emerald named "&c&lGAMEMODE" with lore "" and "&7Unknown" and "" to do nothing
+			if arg-1 is online:
+				format gui slot 12 of player with map named "&c&lLOCATION" with lore "" and "&7%location of arg-1%&7, world %world of arg-1%" and "" to do nothing
+			else:
+				format gui slot 12 of player with map named "&c&lLOCATION" with lore "" and "&7%({lastLocation::%arg-1's uuid%} ? ""None"")%" and "" to do nothing
+			format gui slot 13 of player with clock named "&c&lPLAYTIME" with lore "" and "&7%({playtime::%uuid of arg-1%} ? 0)%&7 minutes" and "" to do nothing
+			set {_prefix} to (arg-1's prefix ? "Default")
+			set {_lore::*} to ("", "&7Level &c%({data::%uuid of arg-1%::level} ? 0)%", "&7Money &c%(arg-1's balance ? ""Unknown"")%", "&7Streak &c%({data::%uuid of arg-1%::streak} ? 0)%", "&7Kills &c%({data::%arg-1's uuid%::kills} ? 0)%", "&7Deaths &c%({data::%uuid of arg-1%::deaths} ? 0)%", "&7KDR &c%(({data::%uuid of arg-1%::kills} ? 1) / ({data::%uuid of arg-1%::deaths} ? 1))%", "&7Rank &c%{_prefix}%", "&7Bounty &c$%({data::%uuid of arg-1%::bounty} ? 0)%", "&7Clan &c%({clan::%uuid of arg-1%::name} ? ""None"")%", and "")
+			format gui slot 14 of player with dirt named "&c&lSTATS" with lore {_lore::*} to do nothing
+			set {_warns} to (size of ({history::%arg-1's uuid%::*} where [input contains "warn"] ? 0) - 1)
+			set {_kicks} to (size of ({history::%arg-1's uuid%::*} where [input contains "kick"] ? 0) - 1)
+			set {_mutes} to (size of ({history::%arg-1's uuid%::*} where [input contains "mute"] ? 0) - 1)
+			set {_bans} to (size of ({history::%arg-1's uuid%::*} where [input contains "ban"] ? 0) - 1)
+			format gui slot 15 of player with tnt named "&c&lPUNISHMENTS" with lore "" and  "&c%(size of {reports::%uuid of arg-1%::*} ? 0)%&c report(s)" and "&c%{_warns}%&c warn(s)" and "&c%{_kicks}%&c kick(s)" and "&c%{_mutes}%&c mute(s)" and "&c%{_bans}%&c ban(s)" and "" to do nothing
+			format gui slot 16 of player with diamond named "&c&lFIRST JOIN" with lore "" and "&7%({firstjoin::%uuid of arg-1%} ? ""Never"")%" and "" to do nothing
+			if arg-1 is online:
+				format gui slot 20 of player with paper named "&c&lIP" with lore "" and "&7%ip of arg-1%" and "" to do nothing
+			else:
+				format gui slot 20 of player with paper named "&c&lIP" with lore "" and "&7%({ip::%uuid of arg-1%} ? ""Unknown"")%" and "" to do nothing
+			clear {_lore::*}
+			loop {alts::%{ip::%arg-1's uuid%}%::*}:
+				if {ban::%uuid of (loop-value parsed as an offline player)%::expiry} is set:
+					add "&c%loop-value%" to {_lore::*}
+				else:
+					if loop-value parsed as an offline player is online:
+						add "&c%loop-value%" to {_lore::*}
+					else:
+						add "&7%loop-value%" to {_lore::*}
+			format gui slot 21 of player with honeycomb named "&c&lACCOUNTS" with lore "" and "&7(A red name indicates a banned account)" and "" and {_lore::*} and "" to do nothing
+			format gui slot 22 of player with lead named "&c&lUUID" with lore "" and "&7%uuid of arg-1%" and "" to do nothing
+			delete {_lore::*}
+			loop {names::%arg-1's uuid%::*}:
+				add "&7%loop-value%" to {_lore::*}
+			format gui slot 23 of player with nametag named "&c&lNAMES" with lore "" and "&7Past names that &7%arg-1%&7 has joined with" and "" and {_lore::*} and "" to do nothing
+			if {ban::%uuid of arg-1%::expiry} is set:
+				format gui slot 24 of player with prismarine shard named "&c&lSTATUS" with lore "" and "&cBanned, last seen at %({lastseen::%uuid of arg-1%} ? ""unknown"")%" and "" to do nothing
+			else if arg-1 is online:
+				format gui slot 24 of player with prismarine shard named "&c&lSTATUS" with lore "" and "&cOnline" and "" to do nothing
+			else:
+				format gui slot 24 of player with prismarine shard named "&c&lSTATUS" with lore "" and "&7Offline, last seen at %({lastseen::%uuid of arg-1%} ? ""unknown"")%" and "" to do nothing	
+
+command /freeze [<player>]:
+	permission: plex.freeze
+	trigger:
+		if arg-1 is not set:
+			send "&c&lPLEXPVP &8» &7Usage: &c/freeze <player>"
+		else:
+			if arg-1 has permission "staff":
+				send "&c&lPLEXPVP &8» &7You can't freeze staff members"
+				stop
+			if {frozen::%arg-1's uuid%} is not set:
+				set {frozen::%arg-1's uuid%} to true
+				teleport arg-1 to {freeze}
+				send "&7" to arg-1
+				send "&c&lFROZEN &7You have been frozen by a staff member" to arg-1
+				send "" to arg-1
+				send "&7You've been frozen for a &cSS &7please do &c/discord" to arg-1
+				send "&7And join the &cPublic ##1 &7voice channel!" to arg-1
+				send "" to arg-1
+				teleport player to {freeze}
+				send "&c&lPLEXPVP &8» &7You have frozen %arg-1%" to player
+			else:
+				delete {frozen::%arg-1's uuid%}
+				teleport arg-1 to {spawn}
+				send "&c&lPLEXPVP &8» &7You have unfrozen %arg-1%" to player
+				
+
+on command:
+	if {frozen::%player's uuid%} is set:
+		if "%command%" does not contain "discord":
+			cancel event
+			send "&7"
+			send "&c&lFROZEN &7You have been frozen by a staff member"
+			send ""
+			send "&7You've been frozen for a &cSS &7please do &c/discord"
+			send "&7And join the &cPublic ##1 &7voice channel!"
+			send ""
+			stop
+
+on quit:
+	if {frozen::%player's uuid%} is set:
+		delete {frozen::%player's uuid%}
+		loop all players:
+			if loop-player has permission "staff":
+				send "&c"
+				send "&c%player% &7logged out while frozen" to loop-player
+				send "&c"

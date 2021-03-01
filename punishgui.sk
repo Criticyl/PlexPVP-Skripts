@@ -1,0 +1,448 @@
+new features:
+#"copy" option for presets - DONE
+#order stuff better (icons & names don't copy)
+#punishment icons (if not default to paper) -DONE
+#left click to view category, right click for suggested - DONE
+#add a previous punishment option - DONE
+
+
+#EXAMPLES
+
+#Basic 1-type punishment:
+#set {punishmentPresets::%category%::%number%::reason} to "reason"
+#set {punishmentPresets::%category%::%number%::type} to "command"
+#set {punishmentPresets::%category%::%number%::duration} to "timespan" (optional)
+
+#Nested Punishments:
+#set {punishmentPresets::%category%::%number%::variability} to true
+#set {punishmentPresets::%category%::%number%::reason} to "reason"
+
+#set {punishmentPresets::%category%::%number%::%number%::reason} to "reason"
+#set {punishmentPresets::%category%::%number%::%number%::type} to "command"
+#set {punishmentPresets::%category%::%number%::%number%::duration} to "timespan" (optional)
+
+#set {punishmentPresets::%category%::%number%::%number%::reason} to "reason (2nd Offense)"
+#set {punishmentPresets::%category%::%number%::%number%::type} to "command"
+#set {punishmentPresets::%category%::%number%::%number%::duration} to "PERM" (optional)
+
+#Icons
+#set {punishmentPresets::%category%::%number%::icon} to %item%
+
+#Copying
+#set {punishmentPresets::%category%::%number%::reason} to "copied"
+#set {punishmentPresets::%category%::%number%::copy} to "%category with first char in uppercase%;%number%"
+
+#suggestions
+#set {punishmentPresets::%category%::%number%::suggestions::1} to 1 #if punished once, suggest nested punishment 1
+#set {punishmentPresets::%category%::%number%::suggestions::2} to 1 #if punished twice, suggest nested punishment 1
+#set {punishmentPresets::%category%::%number%::suggestions::3} to 2 #if punished 3 times, suggest nested punishment 2
+
+function loadPunishments():
+	delete {punishmentPresets::*}
+
+	#communication
+	#evasion
+	set {punishmentPresets::global::1::variability} to true
+	set {punishmentPresets::global::1::reason} to "Evasion"
+
+	set {punishmentPresets::global::1::1::reason} to "Mute Evasion"
+	set {punishmentPresets::global::1::1::type} to "Mute"
+	set {punishmentPresets::global::1::1::duration} to "PERM"
+
+	set {punishmentPresets::global::1::2::reason} to "Ban Evasion"
+	set {punishmentPresets::global::1::2::type} to "Ban"
+	set {punishmentPresets::global::1::2::duration} to "PERM"
+
+	#community disruption
+	set {punishmentPresets::global::2::reason} to "Community Disruption"
+	set {punishmentPresets::global::2::type} to "Ban"
+	set {punishmentPresets::global::2::duration} to "PERM"
+
+	#community disruption
+	set {punishmentPresets::global::3::reason} to "Botting"
+	set {punishmentPresets::global::3::type} to "Banip"
+	set {punishmentPresets::global::3::duration} to "PERM"
+
+	#inapp skin
+	set {punishmentPresets::global::4::reason} to "Inappropriate Skin (Change and appeal)"
+	set {punishmentPresets::global::4::type} to "Ban"
+	set {punishmentPresets::global::4::duration} to "PERM"
+
+	#inapp name
+	set {punishmentPresets::global::5::reason} to "Inappropriate Name (Change and appeal)"
+	set {punishmentPresets::global::5::type} to "Ban"
+	set {punishmentPresets::global::5::duration} to "PERM"
+
+	#irl transactions
+	set {punishmentPresets::global::6::reason} to "IRL Transactions"
+	set {punishmentPresets::global::6::type} to "Ban"
+	set {punishmentPresets::global::6::duration} to "PERM"
+
+	#Misuse of reports
+	set {punishmentPresets::global::7::variability} to true
+	set {punishmentPresets::global::7::reason} to "Misuse of Reports"
+
+	set {punishmentPresets::global::7::1::reason} to "Misuse of Reports"
+	set {punishmentPresets::global::7::1::type} to "Warn"
+
+	set {punishmentPresets::global::7::2::reason} to "Misuse of Reports (1st Offense)"
+	set {punishmentPresets::global::7::2::type} to "Ban"
+	set {punishmentPresets::global::7::2::duration} to "1d"
+
+	set {punishmentPresets::global::7::suggestions::1} to 1 #if punished once, suggest nested punishment 1
+	set {punishmentPresets::global::7::suggestions::2} to 1 #if punished once, suggest nested punishment 1
+	set {punishmentPresets::global::7::suggestions::3} to 1 #if punished twice, suggest nested punishment 1
+	set {punishmentPresets::global::7::suggestions::4} to 2 #if punished 3 times, suggest nested punishment 2
+
+	#gameplay offenses
+	#bm
+	set {punishmentPresets::gameplay::1::variability} to true
+	set {punishmentPresets::gameplay::1::reason} to "Blacklisted Modifications"
+
+	set {punishmentPresets::gameplay::1::1::reason} to "Blacklisted Modifications (1st Offense)"
+	set {punishmentPresets::gameplay::1::1::type} to "Ban"
+	set {punishmentPresets::gameplay::1::1::duration} to "7d"
+
+	set {punishmentPresets::gameplay::1::2::reason} to "Blacklisted Modifications (2nd Offense)"
+	set {punishmentPresets::gameplay::1::2::type} to "Ban"
+	set {punishmentPresets::gameplay::1::2::duration} to "14d"
+
+	set {punishmentPresets::gameplay::1::3::reason} to "Blacklisted Modifications (3rd Offense)"
+	set {punishmentPresets::gameplay::1::3::type} to "Ban"
+	set {punishmentPresets::gameplay::1::3::duration} to "30d"
+
+	set {punishmentPresets::gameplay::1::4::reason} to "Blacklisted Modifications (4th Offense)"
+	set {punishmentPresets::gameplay::1::4::type} to "Ban"
+	set {punishmentPresets::gameplay::1::4::duration} to "PERM"
+
+	set {punishmentPresets::gameplay::1::suggestions::1} to 1
+	set {punishmentPresets::gameplay::1::suggestions::2} to 2
+	set {punishmentPresets::gameplay::1::suggestions::3} to 3
+	set {punishmentPresets::gameplay::1::suggestions::4} to 4 
+
+	#bug abuse
+	set {punishmentPresets::gameplay::2::reason} to "Bug Abuse"
+	set {punishmentPresets::gameplay::2::type} to "Ban"
+	set {punishmentPresets::gameplay::2::duration} to "15d"
+
+	#faking hacks
+	set {punishmentPresets::gameplay::3::reason} to "Faking Hacks"
+	set {punishmentPresets::gameplay::3::copy} to "Gameplay;1"
+
+	#spawn camping
+	set {punishmentPresets::gameplay::4::reason} to "Spawn Camping"
+	set {punishmentPresets::gameplay::4::copy} to "Global;7"
+
+	#camping
+	set {punishmentPresets::gameplay::5::reason} to "Camping"
+	set {punishmentPresets::gameplay::5::copy} to "Global;7"
+
+	#boosting
+	set {punishmentPresets::gameplay::6::variability} to true
+	set {punishmentPresets::gameplay::6::reason} to "Boosting"
+
+	set {punishmentPresets::gameplay::6::1::reason} to "Boosting (1st Offense)"
+	set {punishmentPresets::gameplay::6::1::type} to "Ban"
+	set {punishmentPresets::gameplay::6::1::duration} to "1d"
+
+	set {punishmentPresets::gameplay::6::2::reason} to "Boosting (2nd Offense)"
+	set {punishmentPresets::gameplay::6::2::type} to "Ban"
+	set {punishmentPresets::gameplay::6::2::duration} to "7d"
+
+	set {punishmentPresets::gameplay::6::3::reason} to "Boosting (3rd Offense)"
+	set {punishmentPresets::gameplay::6::3::type} to "Ban"
+	set {punishmentPresets::gameplay::6::3::duration} to "PERM"
+
+	set {punishmentPresets::gameplay::1::suggestions::1} to 1
+	set {punishmentPresets::gameplay::1::suggestions::2} to 2
+	set {punishmentPresets::gameplay::1::suggestions::3} to 3
+
+	#communication offenses
+	#spam
+	set {punishmentPresets::communication::1::variability} to true
+	set {punishmentPresets::communication::1::reason} to "Spam"
+
+	set {punishmentPresets::communication::1::suggestions::1} to 1
+	set {punishmentPresets::communication::1::suggestions::2} to 1
+	set {punishmentPresets::communication::1::suggestions::3} to 1
+	set {punishmentPresets::communication::1::suggestions::4} to 2
+
+	set {punishmentPresets::communication::1::1::reason} to "Spam"
+	set {punishmentPresets::communication::1::1::type} to "Warn"
+
+	set {punishmentPresets::communication::1::2::reason} to "Spam (1st Offense)"
+	set {punishmentPresets::communication::1::2::type} to "Mute"
+	set {punishmentPresets::communication::1::2::duration} to "10m"
+
+	set {punishmentPresets::communication::1::5::reason} to "Spam (Severe)"
+	set {punishmentPresets::communication::1::5::type} to "Mute"
+	set {punishmentPresets::communication::1::5::duration} to "1h"
+
+	#excessive caps
+	set {punishmentPresets::communication::2::reason} to "Excessive Caps"
+	set {punishmentPresets::communication::2::copy} to "Communication;1"
+	
+	#disrespect
+	set {punishmentPresets::communication::3::variability} to true
+	set {punishmentPresets::communication::3::reason} to "Disrespect"
+
+	set {punishmentPresets::communication::3::suggestions::1} to 1
+	set {punishmentPresets::communication::3::suggestions::2} to 1
+	set {punishmentPresets::communication::3::suggestions::3} to 1
+	set {punishmentPresets::communication::3::suggestions::4} to 2
+
+	set {punishmentPresets::communication::3::1::reason} to "Disrespect"
+	set {punishmentPresets::communication::3::1::type} to "Warn"
+
+	set {punishmentPresets::communication::3::2::reason} to "Disrespect (1st Offense)"
+	set {punishmentPresets::communication::3::2::type} to "Mute"
+	set {punishmentPresets::communication::3::2::duration} to "30m"
+	
+	#toxicity
+	set {punishmentPresets::communication::4::variability} to true
+	set {punishmentPresets::communication::4::reason} to "Toxicity"
+
+	set {punishmentPresets::communication::4::suggestions::1} to 1
+	set {punishmentPresets::communication::4::suggestions::2} to 2
+	set {punishmentPresets::communication::4::suggestions::3} to 3
+
+	set {punishmentPresets::communication::4::1::reason} to "Toxicity (1st Offense)"
+	set {punishmentPresets::communication::4::1::type} to "Mute"
+	set {punishmentPresets::communication::4::1::duration} to "2h"
+
+	set {punishmentPresets::communication::4::2::reason} to "Toxicity (2nd Offense)"
+	set {punishmentPresets::communication::4::2::type} to "Mute"
+	set {punishmentPresets::communication::4::2::duration} to "10h"
+
+	set {punishmentPresets::communication::4::3::reason} to "Toxicity (3rd Offense)"
+	set {punishmentPresets::communication::4::3::type} to "Mute"
+	set {punishmentPresets::communication::4::3::duration} to "PERM"
+
+	#inapp beh
+	set {punishmentPresets::communication::5::variability} to true
+	set {punishmentPresets::communication::5::reason} to "Inappropriate Behavior"
+
+	set {punishmentPresets::communication::5::suggestions::1} to 1
+	set {punishmentPresets::communication::5::suggestions::2} to 2
+	set {punishmentPresets::communication::5::suggestions::3} to 3
+
+	set {punishmentPresets::communication::5::1::reason} to "Inappropriate Behavior (1st Offense)"
+	set {punishmentPresets::communication::5::1::type} to "Mute"
+	set {punishmentPresets::communication::5::1::duration} to "30m"
+
+	set {punishmentPresets::communication::5::2::reason} to "Inappropriate Behavior (2nd Offense)"
+	set {punishmentPresets::communication::5::2::type} to "Mute"
+	set {punishmentPresets::communication::5::2::duration} to "1h"
+
+	set {punishmentPresets::communication::5::3::reason} to "Inappropriate Behavior (3rd Offense)"
+	set {punishmentPresets::communication::5::3::type} to "Mute"
+	set {punishmentPresets::communication::5::3::duration} to "PERM"
+
+	#death threats
+	set {punishmentPresets::communication::6::variability} to true
+	set {punishmentPresets::communication::6::reason} to "Death Threats"
+
+	set {punishmentPresets::communication::6::suggestions::1} to 1
+	set {punishmentPresets::communication::6::suggestions::2} to 2
+
+	set {punishmentPresets::communication::6::1::reason} to "Death Threats (1st Offense)"
+	set {punishmentPresets::communication::6::1::type} to "Mute"
+	set {punishmentPresets::communication::6::1::duration} to "15d"
+
+	set {punishmentPresets::communication::6::2::reason} to "Death Threats (2nd Offense)"
+	set {punishmentPresets::communication::6::2::type} to "Mute"
+	set {punishmentPresets::communication::6::2::duration} to "PERM"
+
+	#suicidal encouragement
+	set {punishmentPresets::communication::7::reason} to "Suicidal Encouragement"
+	set {punishmentPresets::communication::7::copy} to "30d"
+
+	#discrimination
+	set {punishmentPresets::communication::8::reason} to "Discrimination"
+	set {punishmentPresets::communication::8::copy} to "7d"
+
+	#advertisement
+	set {punishmentPresets::communication::9::variability} to true
+	set {punishmentPresets::communication::9::reason} to "Advertisement"
+
+	set {punishmentPresets::communication::9::1::reason} to "Internal Advertisment"
+	set {punishmentPresets::communication::9::1::type} to "Ban"
+	set {punishmentPresets::communication::9::1::duration} to "PERM"
+
+	set {punishmentPresets::communication::9::2::reason} to "External Advertisement"
+	set {punishmentPresets::communication::9::2::type} to "Mute"
+	set {punishmentPresets::communication::9::2::duration} to "PERM"
+
+
+
+options:
+	prefix: &c&lPLEXPVP &8»&7
+
+command /punish [<offline player>]:
+	permission: plexpvp.punishments.gui
+	permission message: &cNo permission.
+	aliases: p
+	trigger:
+		if arg-1 is not set:
+			send "{@prefix} Usage: &7/punish <player>"
+		else:
+			open virtual chest inventory with size 3 named "&7Punish" to player
+			loop 27 times:
+				format gui slot (loop-number - 1) of player with gray stained glass pane named "&7" to do nothing
+			format gui slot 4 of player with skull of arg-1 named "&7%arg-1%" with lore "" and "%arg-1's prefix ? ""&7Default""%" and "" to do nothing
+			format gui slot 10 of player with writable book named "&c&lHISTORY" with lore "" and "&7Click here to view %arg-1%&7's history" and "" to run player command "history %arg-1%"
+			format gui slot 12 of player with chest named "&c&LINVENTORY" with lore "" and "&7Click here to view %arg-1%&7's inventory" and "" to run function viewInventory(player, arg-1)
+			format gui slot 14 of player with diamond sword named "&c&lGAMEPLAY PUNISHMENTS" with lore "" and "&7Click to proceed to gameplay punishments" and "" with no nbt to run function openPunishmentCategory(player, arg-1, "Gameplay", 1)
+			format gui slot 16 of player with nametag named "&c&lCOMMUNICATION PUNISHMENTS" with lore "" and "&7Click to proceed to communication punishments" and "" to run function openPunishmentCategory(player, arg-1, "Communication", 1)
+			format gui slot 24 of player with emerald named "&c&lGLOBAL PUNISHMENTS" with lore "" and "&7Click to proceed to global punishments" and "" to run function openPunishmentCategory(player, arg-1, "Global", 1)
+			format gui slot 20 of player with compass named "&c&lINFO" with lore "" and "&7Click here to view info about %arg-1%" and "" to run player command "info %arg-1%"
+			if {lastPunishment::%uuid of player%::*} is not set:
+				format gui slot 22 of player with clock named "&c&lPREVIOUS PUNISHMENT" with lore "" and "&cERROR: You have no previous punishment to use" and "" to do nothing
+			else:
+				if {lastPunishment::%uuid of player%::duration} is set:
+					set {_lore::*} to "" and "&7Category: %{lastPunishment::%uuid of player%::category}%" and "&7Type: %{lastPunishment::%uuid of player%::type}%" and "&7Reason: %{lastPunishment::%uuid of player%::reason}%" and "&7Duration: %{lastPunishment::%uuid of player%::duration}%" and ""
+				else:
+					set {_lore::*} to "" and "&7Category: %{lastPunishment::%uuid of player%::category}%" and "&7Type: %{lastPunishment::%uuid of player%::type}%" and "&7Reason: %{lastPunishment::%uuid of player%::reason}%" and ""
+				set {_arg1} to arg-1
+				format gui slot 22 of player with clock named "&c&lPREVIOUS PUNISHMENT" with lore {_lore::*} to run:
+					if {lastPunishment::%uuid of player%::duration} is not set:
+						make player execute command "%{lastPunishment::%uuid of player%::type}% %{_arg1}% %{lastPunishment::%uuid of player%::reason}% (%{lastPunishment::%uuid of player%::category}% Offense)"
+					else if {lastPunishment::%uuid of player%::duration} is "PERM":
+						make player execute command "%{lastPunishment::%uuid of player%::type}% %{_arg1}% %{lastPunishment::%uuid of player%::reason}% (%{lastPunishment::%uuid of player%::category}% Offense)"
+					else:
+						make player execute command "%{lastPunishment::%uuid of player%::type}% %{_arg1}% %{lastPunishment::%uuid of player%::duration}% %{lastPunishment::%uuid of player%::reason}% (%{lastPunishment::%uuid of player%::category}% Offense)"
+					close player's inventory
+
+function openPunishmentCategory(player: player, target: offline player, type: text, page: number):
+	open virtual chest inventory with size 3 named "&7%{_type}%&7 Offenses" to {_player}
+	format gui slot (0, 1, 2, 4, 6, 7, 8, 9, 17, 19, 20, 21, 23, 24, and 25) of {_player} with gray stained glass pane named "&7" to do nothing
+	format gui slot 3 of {_player} with skull of {_target} named "&7%{_target}%" with lore "" and "%{_target}'s prefix ? ""&7Default""%" and "" to do nothing
+	format gui slot 5 of {_player} with compass named "&c&LCATEGORY" with lore "" and "&7You are currently viewing punishments for %{_type} in lowercase%&7 offenses" and "" to do nothing
+	set {_movingSlots::*} to (10, 11, 12, 13, 14, 15, and 16)
+	if {_page} is 1:
+		format gui slot 18 of {_player} with arrow named "&c&lPREVIOUS" with lore "" and "&cERROR: No previous page to return to" and "" to do nothing
+	else:
+		remove 1 from {_page}
+		format gui slot 18 of {_player} with arrow named "&c&lPREVIOUS" with lore "" and "&7Click here to return to page %{_page}%" and "" to run function openPunishmentCategory({_player}, {_target}, {_type}, {_page})
+		add 1 to {_page}
+	if ceil(size of {punishmentPresets::%{_type}%::*} / size of {_movingSlots::*}) != {_page}:
+		add 1 to {_page}
+		format gui slot 26 of {_player} with arrow named "&c&lNEXT" with lore "" and "&7Click here to proceed to page %{_page}%" and "" to run function openPunishmentCategory({_player}, {_target}, {_type}, {_page})
+		remove 1 from {_page}
+	else:
+		format gui slot 26 of {_player} with arrow named "&c&lNEXT" with lore "" and "&cERROR: No next page to proceed to" and "" to do nothing
+	format gui slot 22 of {_player} with barrier named "&c&lRETURN" with lore "" and "&7Click to return to the main menu" and "" to run {_player} command "punish %{_target}%"
+	set {_start} to ({_page} - 1) * size of {_movingSlots::*}
+	loop size of {_movingSlots::*} times:
+		add 1 to {_start}
+		if {punishmentPresets::%{_type}%::%{_start}%::*} is set:
+			if {punishmentPresets::%{_type}%::%{_start}%::copy} is set:
+				set {_split::*} to {punishmentPresets::%{_type}%::%{_start}%::copy} split at ";"
+				formatPunishmentSlot({_player}, {_target}, {_split::1}, {_split::2} parsed as a number, {punishmentPresets::%{_type}%::%{_start}%::reason}, {_movingSlots::%loop-number%}, {_page}, {_start}, {_type})
+			else:
+				formatPunishmentSlot({_player}, {_target}, {_type}, {_start}, {punishmentPresets::%{_type}%::%{_start}%::reason}, {_movingSlots::%loop-number%}, {_page}, {_start}, {_type})
+function formatPunishmentSlot(player: player, target: offline player, type: text, num: number, name: text, slot: number, page: number, originalNum: number, originalType: text):
+	if {punishmentPresets::%{_type}%::%{_num}%::variability} is true:
+		set {_targetUUID} to uuid of {_target}
+		set {_suggestedNum} to 1
+		if {punishmentPresets::%{_type}%::%{_num}%::suggestions::*} is set:
+			{history::%{_targetUUID}%::*} is set
+			loop {history::%{_targetUUID}%::*}:
+				set {_info::*} to loop-value split at ";"
+				if {_info::4} contains "%{punishmentPresets::%{_originalType}%::%{_originalNum}%::reason}%":
+					add 1 to {_suggestedNum}
+		if {punishmentPresets::%{_type}%::%{_num}%::suggestions::%{_suggestedNum}%} is set:
+			set {_suggested} to {punishmentPresets::%{_type}%::%{_num}%::suggestions::%{_suggestedNum}%}
+		else:
+			set {_size} to size of {punishmentPresets::%{_type}%::%{_num}%::suggestions::*}
+			set {_suggested} to {punishmentPresets::%{_type}%::%{_num}%::suggestions::%{_size}%}
+		if {_suggested} is set:
+			if {punishmentPresets::%{_type}%::%{_num}%::%{_suggested}%::duration} is set:
+				set {_suggestedPunishLore::*} to "&7Reason: %{_name}%" and "&7Category: %{_originalType}%" and "&7Type: %{punishmentPresets::%{_type}%::%{_num}%::%{_suggested}%::type}%" and "&7Duration: %{punishmentPresets::%{_type}%::%{_num}%::%{_suggested}%::duration}%"
+			else:
+				set {_suggestedPunishLore::*} to "&7Reason: %{_name}%" and "&7Category: %{_originalType}%" and "&7Type: %{punishmentPresets::%{_type}%::%{_num}%::%{_suggested}%::type}%"
+			set {_lore::*} to "" and "&7Suggested punishment" and "" and {_suggestedPunishLore::*} and "&7Right-click to punish %{_target}%&7 for the above reason" and "" and "&7This punishment type has multiple offense options" and "&7Left-click to proceed to the offense options" and ""
+			format gui slot {_slot} of {_player} with ({punishmentPresets::%{_originalType}%::%{_originalNum}%::icon} ? paper) named "&c&l%{_name} in uppercase%" with lore {_lore::*} to run function multipleOffenseGUI({_player}, {_target}, {_type}, {_page}, {_num}, {_originalNum}, {_originalType}) with "left" click
+			format gui slot {_slot} of {_player} with ({punishmentPresets::%{_originalType}%::%{_originalNum}%::icon} ? paper) named "&c&l%{_name} in uppercase%" with lore {_lore::*} to run function nestedPunish({_player}, {_target}, {punishmentPresets::%{_type}%::%{_num}%::%{_suggested}%::type}, {_name}, {punishmentPresets::%{_type}%::%{_num}%::%{_suggested}%::duration}, {_originalType}) with "right" click
+
+		else:
+			format gui slot {_slot} of {_player} with ({punishmentPresets::%{_originalType}%::%{_originalNum}%::icon} ? paper) named "&c&l%{_name} in uppercase%" with lore "" and "&7This punishment type has multiple offense options" and "" and "&7Click to proceed to the offense options" and "" to run function multipleOffenseGUI({_player}, {_target}, {_type}, {_page}, {_num}, {_originalNum}, {_originalType})
+	else:
+		if {punishmentPresets::%{_type}%::%{_num}%::duration} is set:
+			set {_lore::*} to "" and "&7Category: %{_type}%&7 Offense" and "&7Type: %{punishmentPresets::%{_type}%::%{_num}%::type}%" and "&7Duration: %{punishmentPresets::%{_type}%::%{_num}%::duration}%" and "" and "&7Click to punish %{_target}%&7 for the above reason" and ""
+		else:
+			set {_lore::*} to "" and "&7Category: %{_type}%&7 Offense" and "&7Type: %{punishmentPresets::%{_type}%::%{_num}%::type}%" and "" and "&7Click to punish %{_target}%&7 for the above reason" and ""	
+		format gui slot {_slot} of {_player} with ({punishmentPresets::%{_originalType}%::%{_originalNum}%::icon} ? paper) named "&c&l%{_name} in uppercase%" with lore {_lore::*} to run function punish({_player}, {_target}, {_type}, {_num}, {_originalNum}, {_originalType})
+	
+
+function punish(player: player, target: offline player, type: text, num: number, originalNum: number, originalType: text):
+	set {_uuid} to uuid of {_player}
+	delete {lastPunishment::%{_uuid}%::*}
+	set {lastPunishment::%{_uuid}%::category} to {_originalType}
+	set {lastPunishment::%{_uuid}%::reason} to {punishmentPresets::%{_originalType}%::%{_originalNum}%::reason}
+	set {lastPunishment::%{_uuid}%::type} to {punishmentPresets::%{_type}%::%{_num}%::type}
+	if {punishmentPresets::%{_type}%::%{_num}%::duration} is not set:
+		make {_player} execute command "%{punishmentPresets::%{_type}%::%{_num}%::type}% %{_target}% %{punishmentPresets::%{_originalType}%::%{_originalNum}%::reason}% (%{_originalType}% Offense)"
+	else:
+		set {lastPunishment::%{_uuid}%::duration} to {punishmentPresets::%{_type}%::%{_num}%::duration}
+		if {punishmentPresets::%{_type}%::%{_num}%::duration} is "PERM":
+			make {_player} execute command "%{punishmentPresets::%{_type}%::%{_num}%::type}% %{_target}% %{punishmentPresets::%{_originalType}%::%{_originalNum}%::reason}% (%{_originalType}% Offense)"
+		else:
+			make {_player} execute command "%{punishmentPresets::%{_type}%::%{_num}%::type}% %{_target}% %{punishmentPresets::%{_type}%::%{_num}%::duration}% %{punishmentPresets::%{_originalType}%::%{_originalNum}%::reason}% (%{_originalType}% Offense)"
+	close {_player}'s inventory
+
+function viewInventory(player: player, target: offline player):
+	if {_player} does not have permission "*":
+		send "&cNo permission!" to {_player}
+	else:
+		open {_target}'s inventory to {_player}
+
+function multipleOffenseGUI(player: player, target: offline player, type: text, page: integer, num: integer, originalNum: number, originalType: text):
+	set {_targetUUID} to uuid of {_target}
+	open virtual chest inventory with size 3 named "&7%{punishmentPresets::%{_originalType}%::%{_originalNum}%::reason}%" to {_player}
+	format gui slot (0, 1, 2, 4, 6, 7, 8, 9, 17, 18, 19, 20, 21, 23, 24, 25, and 26) of {_player} with gray stained glass pane named "&7" to do nothing
+	format gui slot 3 of {_player} with skull of {_target} named "&7%{_target}%" with lore "" and "%{_target}'s prefix ? ""&7Default""%" and "" to do nothing
+	format gui slot 5 of {_player} with compass named "&c&LCATEGORY" with lore "" and "&7You are currently viewing punishment options for %{punishmentPresets::%{_originalType}%::%{_originalNum}%::reason}%" and "" to do nothing
+	set {_movingSlots::*} to (10, 11, 12, 13, 14, 15, and 16)
+	format gui slot 22 of {_player} with barrier named "&c&lRETURN" with lore "" and "&7Click to return to the main menu" and "" to run function openPunishmentCategory({_player}, {_target}, {_originalType}, {_page})
+	set {_i} to 0
+	set {_suggestedNum} to 1
+	if {punishmentPresets::%{_type}%::%{_num}%::suggestions::*} is set:
+		{history::%{_targetUUID}%::*} is set
+		loop {history::%{_targetUUID}%::*}:
+			set {_info::*} to loop-value split at ";"
+			if {_info::4} contains "%{punishmentPresets::%{_originalType}%::%{_originalNum}%::reason}%":
+				add 1 to {_suggestedNum}
+	if {punishmentPresets::%{_type}%::%{_num}%::suggestions::%{_suggestedNum}%} is set:
+		set {_suggested} to {punishmentPresets::%{_type}%::%{_num}%::suggestions::%{_suggestedNum}%}
+	else:
+		set {_size} to size of {punishmentPresets::%{_type}%::%{_num}%::suggestions::*}
+		set {_suggested} to {punishmentPresets::%{_type}%::%{_num}%::suggestions::%{_size}%}
+	loop size of {_movingSlots::*} times:
+		add 1 to {_i}
+		if {punishmentPresets::%{_type}%::%{_num}%::%{_i}%::*} is set:
+			if {punishmentPresets::%{_type}%::%{_num}%::%{_i}%::duration} is set:
+				set {_lore::*} to "" and "&7Category: %{_originalType}%&7 Offense" and "&7Type: %{punishmentPresets::%{_type}%::%{_num}%::%{_i}%::type}%" and "&7Duration: %{punishmentPresets::%{_type}%::%{_num}%::%{_i}%::duration}%" and "" and "&7Click to punish %{_target}%&7 for the above reason" and ""
+			else:
+				set {_lore::*} to "" and "&7Category: %{_originalType}%&7 Offense" and "&7Type: %{punishmentPresets::%{_type}%::%{_num}%::%{_i}%::type}%" and "" and "&7Click to punish %{_target}%&7 for the above reason" and ""
+			set {_reason} to {punishmentPresets::%{_type}%::%{_num}%::%{_i}%::reason}
+			replace all {punishmentPresets::%{_type}%::%{_num}%::reason} in {_reason} with {punishmentPresets::%{_originalType}%::%{_originalNum}%::reason}
+			if {_suggested} is {_i}:
+				format gui slot {_movingSlots::%loop-number%} of {_player} with glowing emerald named "&c&l%{_reason} in uppercase%" with lore {_lore::*} and "&7Suggested punishment" and "" to run function nestedPunish({_player}, {_target}, {punishmentPresets::%{_type}%::%{_num}%::%{_i}%::type}, {_reason}, {punishmentPresets::%{_type}%::%{_num}%::%{_i}%::duration}, {_originalType})
+			else:
+				format gui slot {_movingSlots::%loop-number%} of {_player} with paper named "&c&l%{_reason} in uppercase%" with lore {_lore::*} to run function nestedPunish({_player}, {_target}, {punishmentPresets::%{_type}%::%{_num}%::%{_i}%::type}, {_reason}, {punishmentPresets::%{_type}%::%{_num}%::%{_i}%::duration}, {_originalType})
+function nestedPunish(player: player, target: offline player, type: text, reason: text, duration: text, offenseType: text):
+	set {_uuid} to uuid of {_player}
+	delete {lastPunishment::%{_uuid}%::*}
+	set {lastPunishment::%{_uuid}%::category} to {_offenseType}
+	set {lastPunishment::%{_uuid}%::reason} to {_reason}
+	set {lastPunishment::%{_uuid}%::type} to {_type}
+	if {_duration} is not set:
+		make {_player} execute command "%{_type}% %{_target}% %{_reason}% (%{_offenseType}% Offense)"
+	else:
+		set {lastPunishment::%{_uuid}%::duration} to {_duration}
+		if {_duration} is "PERM":
+			make {_player} execute command "%{_type}% %{_target}% %{_reason}% (%{_offenseType}% Offense)"
+		else:
+			make {_player} execute command "%{_type}% %{_target}% %{_duration}% %{_reason}% (%{_offenseType}% Offense)"
+	close {_player}'s inventory

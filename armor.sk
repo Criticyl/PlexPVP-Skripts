@@ -1,0 +1,184 @@
+options:
+	prefix: &d&lBLACKSMITH &8»&7
+	inventory_sound: "entity.bat.takeoff" with volume 1
+	click_sound: "ui.button.click" with volume 1 and pitch 2
+on load:
+	clear {armorPrices::*}
+	set {armorPrices::1} to 64 cobblestone
+	set {armorPrices::2} to 96 cobblestone
+	set {armorPrices::3} to 128 cobblestone
+	set {armorPrices::4} to 64 coal
+	set {armorPrices::5} to 96 coal
+	set {armorPrices::6} to 128 coal
+	set {armorPrices::7} to 64 iron ingot
+	set {armorPrices::8} to 96 iron ingot
+	set {armorPrices::9} to 128 iron ingot
+	set {armorPrices::10} to 96 gold ingot
+	set {armorPrices::11} to 128 gold ingot
+	set {armorPrices::12} to 192 gold ingot
+	set {armorPrices::13} to 128 diamond
+	set {armorPrices::14} to 256 diamond
+	set {armorPrices::15} to 64 obsidian
+	set {armorPrices::16} to 256 obsidian
+	set {armorPrices::17} to 320 obsidian
+	set {armorPrices::18} to 384 obsidian
+	set {armorPrices::19} to 448 obsidian
+	set {armorPrices::20} to 512 obsidian
+ 
+function openArmor(player: player):
+	set {_uuid} to {_player}'s uuid
+ 
+	set {_helmet} to {_player}'s helmet
+	set {_chestplate} to {_player}'s chestplate
+	set {_leggings} to {_player}'s leggings
+	set {_boots} to {_player}'s boots
+	open virtual chest inventory with size 6 named "Armor Upgrades" to {_player}
+	format gui slot 0,1,2,3,4,5,6,7,8,9,11,17,18,20,26,27,29,35,36,38,44,45,46,47,48,49,50,51,52 and 53 of {_player} with air to do nothing
+	if {_helmet} is not set:
+		format gui slot 10 of {_player} with barrier named "&cNo helmet!" with lore "" and "&7You have no helmet currently equipped!" and "" to do nothing
+	else:
+		format gui slot 10 of {_player} with {_helmet} with lore "" and "&7This is your current helmet" and "" to do nothing
+	if {_chestplate} is not set:
+		format gui slot 19 of {_player} with barrier named "&cNo chestplate!" with lore "" and "&7You have no chestplate currently equipped!" and "" to do nothing
+	else:
+		format gui slot 19 of {_player} with {_chestplate} with lore "" and "&7This is your current chestplate" and "" to do nothing	
+	if {_leggings} is not set:
+		format gui slot 28 of {_player} with barrier named "&cNo leggings!" with lore "" and "&7You have no leggings currently equipped!" and "" to do nothing
+	else:
+		format gui slot 28 of {_player} with {_leggings} with lore "" and "&7These are your current leggings" and "" to do nothing
+	if {_boots} is not set:
+		format gui slot 37 of {_player} with barrier named "&cNo boots!" with lore "" and "&7You have no boots currently equipped!" and "" to do nothing
+	else:
+		format gui slot 37 of {_player} with {_boots} with lore "" and "&7These are your current boots" and "" to do nothing
+ 
+	formatArmorSlot({_player}, 12, "Leather", 0, 1, 0)
+	formatArmorSlot({_player}, 21, "Leather", 1, 2, 0)
+	formatArmorSlot({_player}, 30, "Leather", 2, 3, 0)
+	formatArmorSlot({_player}, 39, "Leather", 3, 4, 0)
+	formatArmorSlot({_player}, 13, "Chainmail", 0, 5, 5)
+	formatArmorSlot({_player}, 22, "Chainmail", 1, 6, 5)
+	formatArmorSlot({_player}, 31, "Chainmail", 2, 7, 5)
+	formatArmorSlot({_player}, 40, "Chainmail", 3, 8, 5)
+	formatArmorSlot({_player}, 14, "Iron", 0, 9, 10)
+	formatArmorSlot({_player}, 23, "Iron", 1, 10, 10)
+	formatArmorSlot({_player}, 32, "Iron", 2, 11, 15)
+	formatArmorSlot({_player}, 41, "Iron", 3, 12, 15)
+	formatArmorSlot({_player}, 15, "Diamond", 0, 13, 20)
+	formatArmorSlot({_player}, 24, "Diamond", 1, 14, 25)
+	formatArmorSlot({_player}, 33, "Diamond", 2, 15, 30)
+	formatArmorSlot({_player}, 42, "Diamond", 3, 16, 35)
+	formatArmorSlot({_player}, 16, "Netherite", 0, 17, 40)
+	formatArmorSlot({_player}, 25, "Netherite", 1, 18, 45)
+	formatArmorSlot({_player}, 34, "Netherite", 2, 19, 50)
+	formatArmorSlot({_player}, 43, "Netherite", 3, 20, 60)
+ 
+ 
+function formatArmorSlot(player: player, slot: integer, type: text, ench: integer, setNumber: integer, level: integer):
+	set {_uuid} to uuid of {_player}
+	set {_list::*} to getArmorSet({_type}, {_ench}, {_setNumber})
+	if {_level} > 0:
+		format gui slot {_slot} of {_player} with {_list::1} named "&dArmor &8[&d%toRomanNumeral({_setNumber})%&8]" with lore "", "&7Click to proceed to this category", "&7Requires level &d%{_level}% &7to be unlocked" and "" to run:
+			if {data::%{_uuid}%::level} >= {_level}:
+				openArmorShop({_player}, {_type}, {_ench}, {_setNumber})
+			else:
+				close {_player}'s inventory
+				send "&d&lBLACKSMITH &8» &7You must be level &d%{_level}% &7to unlock this category" to {_player}
+				play sound "ui.button.click" at {_player} for {_player}
+	else:
+		format gui slot {_slot} of {_player} with {_list::1} named "&dArmor &8[&d%toRomanNumeral({_setNumber})%&8]" with lore "" and "&7Click to proceed to this category" and "" to run function openArmorShop({_player}, {_type}, {_ench}, {_setNumber})
+function openArmorShop(player: player, type: text, ench: integer, setNumber: integer):
+	open virtual chest inventory with size 3 named "Armor %{_setNumber}%" to {_player}
+	format gui slot 0,1,2,3,4,5,6,7,8,9,11,13,15,17,18,19,20,21,23,24,25 and 26 of {_player} with air to do nothing
+	set {_previousSet} to ({_setNumber} - 1)
+	set {_armorSet::*} to getArmorSet({_type}, {_ench}, {_setNumber})
+	play sound {@click_sound} at {_player} for {_player}
+	set {_armorOrder::*} to ("Boots", "Leggings", "Chestplate", and "Helmet")
+	set {_armorSlots::*} to (10, 12, 14, and 16)
+	if {_setNumber} is 1:
+		loop 4 times:
+			format gui slot {_armorSlots::%loop-number%} of {_player} with {_armorSet::%loop-number%} with lore "" and "&7A part of armor set &d%toRomanNumeral({_setNumber})%" and "" and "&7Cost: &d%{armorPrices::%{_setNumber}%}%" and "&7Click to purchase" and "" with no nbt to run function giveItem({_player}, {_type}, {_ench}, {_setNumber}, loop-number, 0)
+	else:
+		if {_ench} is not 0:
+			loop 4 times:
+				format gui slot {_armorSlots::%loop-number%} of {_player} with {_armorSet::%loop-number%} with lore "" and "&7Enchanted with &dProtection %toRomanNumeral({_ench})%&7" and "&7A part of armor set &d%toRomanNumeral({_setNumber})%" and "" and "&7Cost: &d%{armorPrices::%{_setNumber}%}%&7 and" and "&d%{_armorOrder::%loop-number%}% from set %toRomanNumeral({_previousSet})%" and "&7Click to purchase" and "" with no nbt to run function giveItem({_player}, {_type}, {_ench}, {_setNumber}, loop-number, {_previousSet})
+		else:
+			loop 4 times:
+				format gui slot {_armorSlots::%loop-number%} of {_player} with {_armorSet::%loop-number%} with lore "" and "&7A part of armor set &d%toRomanNumeral({_setNumber})%" and "" and "&7Cost: &d%{armorPrices::%{_setNumber}%}%&7 and" and "&d%{_armorOrder::%loop-number%}% from set %toRomanNumeral({_previousSet})%" and "&7Click to purchase" and "" with no nbt to run function giveItem({_player}, {_type}, {_ench}, {_setNumber}, loop-number, {_previousSet})
+ 
+	format gui slot 22 of {_player} with barrier named "&dReturn" with lore "" and "&7Click to return to the main shop" and "" to run:
+		openArmor({_player})
+		play sound {@click_sound} at {_player} for {_player}
+ 
+function getArmorSet(type: text, ench: integer, setNumber: integer) :: objects:
+	if {_ench} is not 0:
+		set {_armorSet::1} to ("%{_type}% Boots of protection %{_ench}%" parsed as an item type) named "&d%{_type}% &dBoots &8[&d%toRomanNumeral({_setNumber})%&8]" with lore "" and "&7Enchanted with &dProtection %toRomanNumeral({_ench})%&7" and "&7A part of armor set &d%toRomanNumeral({_setNumber})%" and "" with no nbt
+		set {_armorSet::2} to ("%{_type}% Leggings of protection %{_ench}%" parsed as an item type) named "&d%{_type}% &dLeggings &8[&d%toRomanNumeral({_setNumber})%&8]" with lore "" and "&7Enchanted with &dProtection %toRomanNumeral({_ench})%&7" and "&7A part of armor set &d%toRomanNumeral({_setNumber})%" and "" with no nbt
+		set {_armorSet::3} to ("%{_type}% Chestplate of protection %{_ench}%" parsed as an item type) named "&d%{_type}% &dChestplate &8[&d%toRomanNumeral({_setNumber})%&8]" with lore "" and "&7Enchanted with &dProtection %toRomanNumeral({_ench})%&7" and "&7A part of armor set &d%toRomanNumeral({_setNumber})%" and "" with no nbt
+		set {_armorSet::4} to ("%{_type}% Helmet of protection %{_ench}%" parsed as an item type) named "&d%{_type}% &dHelmet &8[&d%toRomanNumeral({_setNumber})%&8]" with lore "" and "&7Enchanted with &dProtection %toRomanNumeral({_ench})%&7" and "&7A part of armor set &d%toRomanNumeral({_setNumber})%" and "" with no nbt
+	else:
+		set {_armorSet::1} to ("%{_type}% Boots" parsed as an item type) named "&d%{_type}% &dBoots &8[&d%toRomanNumeral({_setNumber})%&8]" with lore "" and "&7A part of armor set &d%toRomanNumeral({_setNumber})%" and "" with no nbt
+		set {_armorSet::2} to ("%{_type}% Leggings" parsed as an item type) named "&d%{_type}% &dLeggings &8[&d%toRomanNumeral({_setNumber})%&8]" with lore "" and "&7A part of armor set &d%toRomanNumeral({_setNumber})%" and "" with no nbt
+		set {_armorSet::3} to ("%{_type}% Chestplate" parsed as an item type) named "&d%{_type}% &dChestplate &8[&d%toRomanNumeral({_setNumber})%&8]" with lore "" and "&7A part of armor set &d%toRomanNumeral({_setNumber})%" and "" with no nbt
+		set {_armorSet::4} to ("%{_type}% Helmet" parsed as an item type) named "&d%{_type}% &dHelmet &8[&d%toRomanNumeral({_setNumber})%&8]" with lore "" and "&7A part of armor set &d%toRomanNumeral({_setNumber})%" and "" with no nbt
+	if {_type} is "Leather":
+		dye {_armorSet::*} red
+	return {_armorSet::*}
+ 
+ 
+function giveItem(player: player, type: text, ench: integer, setNumber: integer, loopNum: number, previousSet: number):
+	set {_armorSet::*} to getArmorSet({_type}, {_ench}, {_setNumber})
+	set {_sltType} to "%type of {_armorSet::%{_loopNum}%}%"
+	set {_slotType::*} to {_sltType} split at " "
+	if {_previousSet} is 0:
+		if {_player}'s inventory contains {armorPrices::%{_setNumber}%}:
+			if {_player}'s inventory can hold {_armorSet::%{_loopNum}%}:
+				remove {armorPrices::%{_setNumber}%} from {_player}'s inventory
+				give {_player} {_armorSet::%{_loopNum}%}
+				send "{@prefix} Armor upgraded!" to {_player}
+				play sound "entity.arrow.hit_player" at pitch 2 at {_player} for {_player}
+			else:
+				send "{@prefix} You do not have enough room in your inventory for this!" to {_player}
+				play sound "ui.button.click" at {_player} for {_player}
+		else:
+			send "{@prefix} You do not have %{armorPrices::%{_setNumber}%}%&7!" to {_player}
+			play sound "ui.button.click" at {_player} for {_player}
+	else:
+		loop all items in {_player}'s inventory:
+			delete {_typeOf}
+			delete {_itemType::*}
+			delete {_name::*}
+			delete {_nameTwo::*}
+ 
+			set {_typeOf} to "%type of loop-item%"
+			set {_itemType::*} to {_typeOf} split at " "
+			if {_itemType::2} is {_slotType::2}:
+				set {_name::*} to uncolored name of loop-item split at "["
+				set {_nameTwo::*} to {_name::2} split at "]"
+				if romanNumeralToInteger({_nameTwo::1}) is {_previousSet}:
+					set {_hasItem} to loop-item
+		if {_hasItem} is set:
+			if {_player}'s inventory contains {armorPrices::%{_setNumber}%}:
+				if {_player}'s inventory can hold {_armorSet::%{_loopNum}%}:
+					remove {_hasItem} from {_player}'s inventory
+					remove {armorPrices::%{_setNumber}%} from {_player}'s inventory
+					give {_player} {_armorSet::%{_loopNum}%}
+					send "{@prefix} Armor upgraded!" to {_player}
+					play sound "entity.arrow.hit_player" with pitch 2 at {_player} for {_player}
+				else:
+					send "{@prefix} You do not have enough room in your inventory for this!" to {_player}
+					play sound "ui.button.click" at {_player} for {_player}
+			else:
+				send "{@prefix} You do not have %{armorPrices::%{_setNumber}%}%&7!" to {_player}
+				play sound "ui.button.click" at {_player} for {_player}
+		else:
+			send "{@prefix} You do not have the previous armor set item!" to {_player}
+			play sound "ui.button.click" at {_player} for {_player}
+ 
+ 
+function toRomanNumeral(num: number) :: text:
+	return the roman numeral of {_num}
+ 
+ 
+function romanNumeralToInteger(numeral: text) :: number:
+	return the arabic number of {_numeral}
+

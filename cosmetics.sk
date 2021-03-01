@@ -1,0 +1,146 @@
+command /cosmetics [<text>]:
+	trigger:
+		play sound "entity.chicken.egg" at pitch 0 at player for player
+		open virtual chest inventory with size 3 named "Cosmetics" to player
+		format gui slot 0,1,2,3,4,5,6,7,8,9,10,11,13,15,16,17,18,19,20,21,22,23,24,25 and 26 of player with air to do nothing
+		format gui slot 12 of player with chest named "&d&lSPAWN COSMETICS" lored "&7Spawn cosmetics are fun effects that||&7can be used in the spawn region only||&7||&d(Click to visit this category)" to run:
+			play sound "ui.button.click" with volume 100 and pitch 2 at player for player
+			open virtual chest inventory with size 1 named "Spawn Cosmetics" to player
+			format gui slot 0 of player with sweet berries named "&dChristmas Halo" lored "&7This cosmetic is unlocked in the &dplexwell||&7||&7A small &dchristmas halo &7trail that emits above your head||&7||&7All cosmetics only work in the spawn region!||&7||&d(Click to enable this cosmetic)" to run:
+				applyCosmetic(player, "christmas", "christmas")
+			format gui slot 1 of player with redstone named "&dRedstone Feet" lored "&7This cosmetic is unlocked with &8[&aVIP&8] &7rank||&7||&7A small &dredstone &7trail that emits from your feet||&7||&7All cosmetics only work in the spawn region!||&7||&d(Click to enable this cosmetic)" to run:
+				applyCosmetic(player, "redstone", "vip")
+			format gui slot 2 of player with wool named "&dRainbow Feet" lored "&7This cosmetic is unlocked with &8[&3PATRON&8] &7rank||&7||&7A small &drainbow &7trail that emits from your feet||&7All cosmetics only work in the spawn region!||&7||&d(Click to enable this cosmetic)" to run:
+				applyCosmetic(player, "rainbow", "patron")
+			format gui slot 3 of player with diamond named "&dDiamond Trail" lored "&7This cosmetic is unlocked with &8[&dULTRA&8] &7rank||&7||&7A trail of &ddiamond &7will emit from your feet||&7||&7All cosmetics only work in the spawn region!||&7||&d(Click to enable this cosmetic)" to run:
+				applyCosmetic(player, "diamond", "ultra")
+			format gui slot 4 of player with blaze powder named "&dBlaze Effect" lored "&7This cosmetic is unlocked with &8[&dULTRA&8] &7rank||&7||&7A trail of &dfire &7will emit from your back||&7||&7All cosmetics only work in the spawn region!||&7||&d(Click to enable this cosmetic)" to run:
+				applyCosmetic(player, "blaze", "ultra")
+			format gui slot 8 of player with barrier named "&dClear Spawn Cosmetics" lored "&7This clears all of your active cosmetics||&7||&d(Click to clear cosmetics)" to run:
+				clearCosmetics(player)
+				delete {lastcosmetic::%player's uuid%}
+				close player's inventory
+				send "&d&lCOSMETICS &8» &7You have disabled all your spawn cosmetics!" to player
+		format gui slot 14 of player with glowing diamond sword named "&d&lKILL EFFECTS" lored "&7Kill effects are fun particles and effects that||&7appear every time you kill a player!||&7||&d(Click to visit this category)" with no nbt to run:
+			play sound "ui.button.click" with volume 100 and pitch 2 at player for player
+			open virtual chest inventory with size 1 named "Kill Effects" to player
+			format gui slot 0 of player with white dye named "&dCloud Explosion" lored "&7This kill effect is unlocked with &8[&3PATRON&8] &7rank||&7||&7Every time you kill a player, it will explode with clouds||&7||&d(Click to enable this kill effect)" to run:
+				applyKillEffect(player, "cloud", "patron")
+			format gui slot 1 of player with redstone named "&dBlood Explosion" lored "&7This kill effect is unlocked with &8[&6LEGEND&8] &7rank||&7||&7Every time you kill a player, it will explode with blood||&7||&d(Click to enable this kill effect)" to run:
+				applyKillEffect(player, "blood", "legend")
+			format gui slot 2 of player with firework named "&dFirework" lored "&7This kill effect is unlocked with &8[&dULTRA&8] &7rank||&7||&7Every time you kill a player, it will explode a firework||&7||&d(Click to enable this kill effect)" to run:
+				applyKillEffect(player, "firework", "ultra")
+			format gui slot 3 of player with heart of the sea named "&dConsumed" lored "&7This kill effect is unlocked with &8[&dULTRA&8] &7rank||&7||&7Every time you kill a player, it will consume them||&7||&d(Click to enable this kill effect)" to run:
+				applyKillEffect(player, "consume", "ultra")
+			format gui slot 8 of player with barrier named "&dClear kill effects" lored "&7This turns off all your kill effects||&7||&d(Click to clear kill effects)" to run:
+				clearKillEffects(player)
+				close player's inventory
+				send "&d&lCOSMETICS &8» &7You have disabled all your kill effects!" to player
+
+function clearKillEffects(p: player):
+	set {_uuid} to uuid of {_p}
+	set {killeffect::%{_uuid}%::blood} to false
+	set {killeffect::%{_uuid}%::firework} to false
+	set {killeffect::%{_uuid}%::cloud} to false
+	set {killeffect::%{_uuid}%::consume} to false
+
+function applyKillEffect(p: player, effect: text, perm: text):
+	play sound "ui.button.click" with volume 100 and pitch 2 at {_p} for {_p}
+	set {_uuid} to uuid of {_p}
+	close {_p}'s inventory
+	if {_p} has permission "%{_perm}%":
+		clearKillEffects({_p})
+		set {killeffect::%{_uuid}%::%{_effect}%} to true
+		send "&d&lCOSMETICS &8» &7You have enabled &d%{_effect}% &7kill effect!" to {_p}
+	else:
+		send "&d&lCOSMETICS &8» &7You have disabled all your kill effects!" to {_p}
+
+function applyCosmetic(p: player, cosmetic: text, perm: text):
+	play sound "ui.button.click" with volume 100 and pitch 2 at {_p} for {_p}
+	set {_uuid} to uuid of {_p}
+	close {_p}'s inventory
+	clearCosmetics({_p})
+	if {_p} has permission {_perm}:
+		set {activeCosmetic::%{_uuid}%} to true
+		if {_cosmetic} is "redstone":
+			drawDot count 3, particle "redstone", RGB 255, 0, 0, center {_p}, id "redstone.%{_uuid}%", rainbowMode false, visibleRange 32, pulseDelay 0
+			send "&d&lCOSMETICS &8» &7You enabled the &dRedstone &7cosmetic!" to {_p}
+			set {lastcosmetic::%{_uuid}%} to "redstone"
+		if {_cosmetic} is "diamond":
+			drawItemFountain glowing diamond, style 1, center {_p}, id "diamond.%{_uuid}%", itemTime 5 tick, yVelocity -0.1, radius 0, density 1000, displacementXYZ 0, 0, 0, pulseDelay 1
+			send "&d&lCOSMETICS &8» &7You enabled the &dDiamond &7cosmetic!" to {_p}
+			set {lastcosmetic::%{_uuid}%} to "diamond"
+		if {_cosmetic} is "blaze":
+			drawWings style 11, particle1 "flame", speed 0, RGB 0, 0, 0, particle2 "redstone", speed2 0, RGB2 0, 0, 0, particle3 "redstone", speed3 0, RGB3 245, 122, 0, center {_p}, id "blaze.%{_uuid}%", isSingle false, {_p}, rainbowMode false, angle 110, height -1.2, space 0.03, visibleRange 30, tps 1, second 1
+			send "&d&lCOSMETICS &8» &7You enabled the &dBlaze &7cosmetic!" to {_p}
+			set {lastcosmetic::%{_uuid}%} to "blaze"
+		if {_cosmetic} is "rainbow":
+			drawRings particle "redstone", RGB 80, 255, 255, center {_p}, id "rainbow.%{_uuid}%", rainbowMode true, randomRotation true, animated false, radius 0.2, ringCount 2, ringDensity 5, visibleRange 32, displacementXYZ 0, -0.7, 0, pulseDelay 1
+			send "&d&lCOSMETICS &8» &7You enabled the &dRainbow &7cosmetic!" to {_p}
+			set {lastcosmetic::%{_uuid}%} to "rainbow"
+		if {_cosmetic} is "christmas":
+			drawHalo particle "redstone", RGB 0, 135, 62, center {_p}, id "christmas.%{_uuid}%", rainbowMode false, solid true, visibleRange 32
+			set {lastcosmetic::%{_uuid}%} to "christmas"
+			send "&d&lCOSMETICS &8» &7You enabled the &dChristmas &7cosmetic!" to {_p}
+	else:
+		send "&d&lCOSMETICS &8» &7You don't have access to this cosmetic" to {_p}
+
+function lastCosmetics(p: player, cosmetic: text):
+	set {_uuid} to uuid of {_p}
+	if {_cosmetic} is "redstone":
+		drawDot count 3, particle "redstone", RGB 255, 0, 0, center {_p}, id "redstone.%{_uuid}%", rainbowMode false, visibleRange 32, pulseDelay 0
+		set {activeCosmetic::%{_uuid}%} to true
+	if {_cosmetic} is "diamond":
+		drawItemFountain glowing diamond, style 1, center {_p}, id "diamond.%{_uuid}%", itemTime 5 tick, yVelocity -0.1, radius 0, density 1000, displacementXYZ 0, 0, 0, pulseDelay 1
+		set {activeCosmetic::%{_uuid}%} to true
+	if {_cosmetic} is "blaze":
+		drawWings style 11, particle1 "flame", speed 0, RGB 0, 0, 0, particle2 "redstone", speed2 0, RGB2 0, 0, 0, particle3 "redstone", speed3 0, RGB3 245, 122, 0, center {_p}, id "blaze.%{_uuid}%", isSingle false, {_p}, rainbowMode false, angle 110, height -1.2, space 0.03, visibleRange 30, tps 1, second 1
+		set {activeCosmetic::%{_uuid}%} to true
+	if {_cosmetic} is "rainbow":
+		drawRings particle "redstone", RGB 80, 255, 255, center {_p}, id "rainbow.%{_uuid}%", rainbowMode true, randomRotation true, animated false, radius 0.2, ringCount 2, ringDensity 5, visibleRange 32, displacementXYZ 0, -0.7, 0, pulseDelay 1
+		set {activeCosmetic::%{_uuid}%} to true
+	if {_cosmetic} is "christmas":
+		drawHalo particle "redstone", RGB 0, 135, 62, center {_p}, id "christmas.%{_uuid}%", rainbowMode false, solid true, visibleRange 32
+		set {activeCosmetic::%{_uuid}%} to true
+on quit:
+	clearCosmetics(player)
+
+function clearCosmetics(p: player):
+	set {_uuid} to uuid of {_p}
+	stopEffect id "spooky.%{_uuid}%"
+	stopEffect id "redstone.%{_uuid}%"
+	stopEffect id "diamond.%{_uuid}%"
+	stopEffect id "blaze.%{_uuid}%"
+	stopEffect id "rainbow.%{_uuid}%"
+	stopEffect id "christmas.%{_uuid}%"
+	delete {activeCosmetic::%{_uuid}%}
+
+on region enter:
+	if "%event-region%" contains "nofly":	
+		clearCosmetics(player)
+	else:
+		if {activeCosmetic::%player's uuid%} is not true:
+			lastCosmetics(player, "%{lastcosmetic::%player's uuid%}%")
+				
+command /cosmetictest:
+	permission: *
+	trigger:	
+		loop all players:
+			stopEffect id "spooky.%loop-player's uuid%"
+
+on right click on player:
+    uncolored entity's name = "(RIGHT-CLICK)"
+    if block 2 meters below entity = furnace:
+        cancel event
+        make player execute command "cosmetics"
+
+
+
+
+on command:
+	if "%command%" contains "vanish", "sv" or "supervanish":
+		if player has permission "staff":
+			wait 1 tick
+			send "&d[SV] &7Running a vanish command has turned your cosmetics off"
+			clearCosmetics(player)
+			delete {lastcosmetic::%player's uuid%}

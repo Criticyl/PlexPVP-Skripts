@@ -1,0 +1,22 @@
+on script load:
+	set {sql} to the database "mysql://sql2.freemysqlhosting.net:3306/sql2373779?user=sql2373779&password=mL4*aA6%%25&useSSL=false"
+
+on message received:
+	if event-channel is channel with id "769305008897523742":
+		set {_event} to event-string
+		if event-string contains ";":
+			set {_args::*} to {_event} split at ";"
+			
+			set {_player} to {_args::3}
+			set {_uuid} to uuid of ({_player} parsed as offline player)
+			set {_now} to "%now%"
+			execute "INSERT INTO punishments (Username, UUID, Type, Reason, IssueDate, Length, Issuer) VALUES (%{_player}%, %{_uuid}%, %{_args::2}%, %{_args::5}%, %{_now}%, %{_args::4}%, %{_args::1}%);" in {sql}
+	if event-channel is channel with id "772616994078851092":
+		set {_event} to event-string
+		if event-string contains ";":
+			set {_args::*} to {_event} split at ";"
+			
+			set {_player} to {_args::3}
+			set {_uuid} to uuid of ({_player} parsed as offline player)
+			set {_now} to "%now%"
+			execute "INSERT INTO punishments (Username, UUID, Type, Reason, IssueDate, Length, Issuer) VALUES (%{_player}%, %{_uuid}%, %{_args::2}%, %{_args::5}%, %{_now}%, %{_args::4}%, %{_args::1}%);" in {sql}

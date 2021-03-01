@@ -1,0 +1,38 @@
+command /purchase [<text>]:
+	permission: *
+	trigger:
+		broadcast colored "%nl%&6&lSTORE &8» &7%arg-1%%nl%&r"
+		play sound "block.beacon.activate" with volume 1 and pitch 2 to all players
+
+
+
+
+function booster(player: player, type: text):
+	set {%{_type}%-booster} to 2
+	add 1 hour to {%{_type}%-boostertime}
+	broadcast colored "%nl%&6&lSTORE &8» &6%{_player}% &7has purchased a &6%{_type}% &7booster!%nl%&e%{%{_type}%-boostertime}% &7remaining on the booster!%nl%&r"
+
+every second:
+	if {sword-booster} is 2:
+		remove 1 second from {sword-boostertime}
+		if {sword-boostertime} is 2 second:
+			set {sword-booster} to 1
+			set {sword-boostertime} to 1 seconds
+			broadcast "&6&lSTORE &8» &7The sword booster has expired"
+	if {pickaxe-booster} is 2:
+		remove 1 second from {pickaxe-boostertime}
+		if {pickaxe-boostertime} is 2 second:
+			set {pickaxe-booster} to 1
+			set {pickaxe-boostertime} to 1 seconds
+			broadcast "&6&lSTORE &8» &7The pickaxe booster has expired"
+command /booster [<offlineplayer>] [<text>]:
+	permission: *
+	trigger:
+		booster(arg-1, arg-2)
+
+
+command /gift-all [<text>]:
+	permission: *
+	trigger:
+		loop all players:
+			add 1 to {gift::%loop-player's uuid%}

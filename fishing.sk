@@ -1,0 +1,123 @@
+options:
+	prefix: &3&lFISHING &8»&7
+	inventory_sound: "entity.bat.takeoff" with volume 1
+	click_sound: "ui.button.click" with volume 1 and pitch 2
+	purchase_sound: "entity.experience_orb.pickup" with volume 1 and pitch 2
+function getBar(x: integer, y: integer, len: integer) :: string:
+    set {_a} to floor({_x} / {_y} * {_len})
+    set {_out} to "&b"
+    loop {_a} times:
+        set {_out} to "%{_out}%|"
+    set {_out} to "%{_out}%&7"
+    loop {_len} - {_a} times:
+        set {_out} to "%{_out}%|"
+    return "%{_out}%"
+function getFishRarity(fish: string) :: number:
+	if {_fish} = "COLD COD":
+		return 50.7
+	else if {_fish} = "SNOWY SALMON":
+		return 21.1
+	else if {_fish} = "PUFFER FISH":
+		return 9
+function getRandomFish() :: string:
+	chance of 5%:
+		return "PACKAGE"
+	else:
+		chance of 50.7%:
+			return "COLD COD"
+		else:
+			chance of 21.1%:
+				return "SNOWY SALMON"
+			else:
+				return "PUFFER FISH"
+
+on fish:
+	if "%region at fishing hook%" doesn't contain "fishing":
+		send "&cYou can't fish here!" to player
+		cancel event
+		stop
+
+on fish:
+	caught item is set
+	target player is not set
+	set {_fish} to getRandomFish()
+	cancel event
+	kill fishing hook
+	if {_fish} = "PACKAGE":
+		send "{@prefix} You got lucky and found a &3Plex Package &7while fishing!"
+		add 1 to {plexwell::%player's uuid%}
+	if {_fish} = "COLD COD" or "SNOWY SALMON" or "PUFFER FISH":
+		set {_chance} to getFishRarity({_fish})
+		set {_amount} to random integer between 1 and 4
+		add {_amount} to {stats::%player's uuid%::fishing::%{_fish}%}
+		set {_am} to a random integer between 5 and 100
+		if {_amount} > 1:
+			send "{@prefix} You caught &3%{_amount}%&3x %{_fish} in lowercase% &7and won &b$%{_am}% &7and &b%10 * {_amount}%&bXP &7[%{_chance}%&7%% chance]"
+			add {_am} to player's balance
+			if {_fish} is "cold cod":
+				set {_fish} to "cod"
+			if {_fish} is "snowy salmon":
+				set {_fish} to "salmon"
+			if {_fish} is "puffer fish":
+				set {_fish} to "pufferfish"
+			add {_amount} to {data::%player's uuid%::fishing::%{_fish}%} 
+			add 6 * {_amount} to {data::%player's uuid%::experience}
+			recalculateLevel(player)
+		else:
+			send "{@prefix} You caught a &3%{_fish} in lowercase% &7and won &b$%{_am}% &7and &b10XP &7[%{_chance}%&7%% chance]"
+			add {_am} to player's balance
+			add 6 to {data::%player's uuid%::experience}
+			recalculateLevel(player)
+
+on fish:
+	if type of player's offhand tool is fishing rod:
+		cancel event
+		send "&cYou cannot fish with a fishing rod in your offhand!"
+		stop
+	if "%region at fishing hook%" contains "fishing":
+		fishing state is "FISHING":
+			set {fishing::%player's uuid%} to true
+			set {_rod} to tool
+			set {_c} to 0
+			set {_info::*} to uncolored line 5 of lore of tool parsed as "\[%string%\] \(%number%/%number%\)"
+			while {fishing::%player's uuid%}:
+				stop if player isn't online
+				stop loop if tool != {_rod}
+				add 1 to {_c}
+				if mod({_c}, 20) = 0:
+					remove 1 from {_info::2}
+					set {_bar} to getBar({_info::2}, {_info::3}, 20)
+					set line 5 of lore of player's tool to "&8[%{_bar}%&8] &8(&7%{_info::2}%&8/&7%{_info::3}%&8)"
+					set {_rod} to player's tool
+				if {_info::2} <= 0:
+					set player's tool to air
+					play sound "item.shield.break" with volume 1 at player for player
+					send "{@prefix} Your fishing rod broke!"
+					stop
+				wait a tick
+		else if fishing state is "REEL_IN" or "IN_GROUND" or "CAUGHT_FISH":
+			clear {fishing::%player's uuid%}
+
+on right click on player:
+	uncolored name of entity = "RIGHT CLICK"
+	block 2 meters below entity = lapis block
+	cancel event
+	play sound {@inventory_sound} at player for player
+	open virtual chest inventory named "Fin the Fisherman" to player
+	format gui slot 0,1,2,3,4,5,6,7,8,9,10,11,13,15,16,17,18,19,20,21,22,23,24,25 and 26 of player with air to do nothing
+	format gui slot 12 of player with fishing rod named "&3Fishing rod" with lore "", "&7Just a basic fishing rod?", "&7Use at the cold waters!", "", "&7Lasts &b30 minutes", "", "&7Cost: &b$100" to run:
+		if player's balance >= 100:
+			if player can hold fishing rod:
+				remove 100 from player's balance
+				give player fishing rod named "&3Fishing rod" with lore "", "&7We're not responsible", "&7if fish don't like you", "", "&8[&b||||||||||||||||||||&8] &8(&71800&8/&71800&8)" with no nbt
+				play sound {@purchase_sound} at player for player
+			else:
+				send "{@prefix} Your inventory is full" to player
+				close player's inventory
+				play sound {@click_sound} at player for player
+		else:
+			send "{@prefix} You're missing &b$%100 - player's balance%" to player
+			close player's inventory
+			play sound {@click_sound} at player for player
+
+	format gui slot 14 of player with tropical fish named "&3Fishing Stats" with lore "", "&7Cold Cod: &b%{data::%player's uuid%::fishing::cod} + 0%", "&7Snowy Salmon: &b%{data::%player's uuid%::fishing::salmon} + 0%", "&7Puffer Fish: &b%{data::%player's uuid%::fishing::pufferfish} + 0%", ""

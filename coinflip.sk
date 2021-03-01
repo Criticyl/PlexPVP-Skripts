@@ -1,0 +1,101 @@
+on inventory close:
+	remove player from {inCoinflipGUI::*}
+on quit:
+	remove player from {inCoinflipGUI::*}
+function showFlips(p: player):
+	add {_p} to {inCoinflipGUI::*}
+	set {_uuid} to {_p}'s uuid
+	open virtual chest with size 4 named "Active coinflips (%size of {cf::*}%)" to {_p}
+	play sound "entity.chicken.egg" at pitch 0 at {_p} for {_p}
+	set {_slot} to 0
+	loop {cf::*}:
+		set {_initiator} to loop-index parsed as an offline player
+		set {_amount} to loop-value
+		set {_uuid-initiator} to uuid of {_initiator}
+		if {_p} is not {_initiator}:
+			set {_text} to "&7Click to &d&lENTER &7this coinflip"
+		else:
+			set {_text} to "&7Click to &d&lCANCEL &7this coinflip"
+		format gui slot {_slot} of {_p} with {_initiator}'s skull named "&dActive Coinflip &8(&f##%{_slot} + 1%&8)" with lore "" and "&d&lWAGER" and "&7$%format({_amount})%" and "" and "&d&lPLAYER" and "&7%{_initiator}%" and "&7" and "&d&lSTATS" and "&7Wins: &f%{cfWins::%{_uuid-initiator}%} ? 0%" and "&7Losses: &f%{cfLosses::%{_uuid-initiator}%} ? 0%" and "&7Profit: &f$%format({cfProfit::%{_uuid-initiator}%} ? 0)%" and "" and {_text} to run:
+			if {_p} is not {_initiator}:
+				if {_p}'s balance >= {_amount}:
+					coinFlop({_initiator}, {_p}, {_amount})	
+				else:
+					format gui slot {_slot} of {_p} with barrier named "&cYou don't have enough money to take this coinflip!"
+			else:
+				delete {cf::%{_uuid-initiator}%}
+				send "&d&lCOINFLIP &8» &7You have cancelled your coinflip"
+				loop {inCoinflipGUI::*}:
+					showFlips(loop-value-2)
+				add {_amount} to {_initiator}'s balance
+		add 1 to {_slot}
+	format gui slot (integers from 27 to 36) of {_p} with black stained glass pane named "&7" with all flags hidden
+	format gui slot 31 of {_p} with book and quill named "&d&lINFORMATION" with lore "", "&7Coinflips are a quick and easy", "&7way to make money if you're", "&7lucky!", "", "&7Usage: &d/cf <amount/stats>", "", "&dGood luck!"
+
+function coinFlop(initiator: offline player, player: offline player, amount: integer):
+	remove {_amount} from balance of {_player}
+	chance of 50%:
+		set {_winner} to {_initiator}
+		set {_loser} to {_player}
+	else:
+		set {_winner} to {_player}
+		set {_loser} to {_initiator}
+	set {_uuid1} to uuid of {_winner}
+	set {_uuid2} to uuid of {_loser}
+	add 1 to {cfWins::%{_uuid1}%}
+	add 1 to {cfLosses::%{_uuid2}%}
+	add {_amount} to {cfProfit::%{_uuid1}%}
+	remove {_amount} from {cfProfit::%{_uuid2}%}
+	play sound "block.note_block.pling" at pitch 2 at {_winner} for {_winner}
+	play sound "block.note_block.pling" at pitch 0 at {_loser} for {_loser}
+	if {_amount} >= 1000:
+		broadcast "&d&lCOINFLIP &8» &d%{_winner}% &7has defeated &d%{_loser}% &7in a &d$%format({_amount})%&7 coinflip!"
+	else:
+		send "&d&lCOINFLIP &8» &d%{_winner}% &7has defeated &d%{_loser}% &7in a &d$%format({_amount})%&7 coinflip!" to {_winner} and {_loser}
+	add {_amount} * 2 to balance of {_winner}
+	set {_uuidInit} to {_initiator}'s uuid
+	delete {cf::%{_uuidInit}%}
+	close {_player}'s inventory
+	loop {inCoinflipGUI::*}:
+		showFlips(loop-value)
+
+command /coinflip [<text>] [<offline player>]:
+	usage: &d&lCOINFLIP &8» &7/coinflip <amount/stats> <player>
+	aliases: coinflip, cf
+	trigger:
+		if arg-1 is set:
+			if arg-1 is "stats":
+				set {_player} to arg-2
+				if arg-2 is not set:
+					set {_player} to player
+				set {_uuid} to uuid of {_player}
+				send ""
+				send "&8» &d&lSTATS &8(&f%{_player}%&8)"
+				send ""
+				send "&8» &dWins: &7%format({cfWins::%{_uuid}%} ? 0)%"
+				send "&8» &dLosses: &7%format({cfLosses::%{_uuid}%} ? 0)%"
+				send "&8» &dW/L: &7%({cfWins::%{_uuid}%}/{cfLosses::%{_uuid}%}) ? ""NaN""%"
+				send ""
+				send "&8» &dProfit: &7$%format({cfProfit::%{_uuid}%} ? 0)%"
+				send ""
+				
+			else:
+				if {cf::%uuid of player%} is not set:
+					set {_arg-1} to arg-1 parsed as integer
+					if {_arg-1} is not set:
+						send "&d&lCOINFLIP &8» &7/coinflip <amount/stats> <player>" 
+					if {_arg-1} >= 100:
+						if {_arg-1} > player's balance:
+							send "&d&lCOINFLIP &8» &7You don't have &d$%format({_arg-1})%&d!"
+						else:
+							set {cf::%player's uuid%} to {_arg-1}
+							send "&d&lCOINFLIP &8» &7You placed a bet of &d$%format({_arg-1})%&d!"
+							subtract {_arg-1} from player's balance
+							loop {inCoinflipGUI::*}:
+								showFlips(loop-value)
+					else:
+						send "&d&lCOINFLIP &8» &7The minimum coinflip amount is &d$100!"
+				else:
+					send "&d&lCOINFLIP &8» &7You already have an active coinflip!"
+		else:
+			showFlips(player)
